@@ -95,11 +95,11 @@ pub mod builder;
 mod command;
 pub mod displayrotation;
 pub mod displaysize;
-pub mod interface;
+//pub mod interface;
 pub mod mode;
 pub mod prelude;
 pub mod properties;
 #[doc(hidden)]
-pub mod test_helpers;
+//pub mod test_helpers;
 
 pub use crate::builder::{Builder, NoOutputPin};

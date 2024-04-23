@@ -56,12 +56,12 @@
 //! ```
 
 use core::marker::PhantomData;
-use hal::{self, digital::v2::OutputPin};
+use hal::{self, digital::OutputPin};
 
 use crate::{
     displayrotation::DisplayRotation,
     displaysize::DisplaySize,
-    interface::{I2cInterface, SpiInterface},
+    //interface::{I2cInterface, SpiInterface},
     mode::{displaymode::DisplayMode, raw::RawMode},
     properties::DisplayProperties,
 };
@@ -73,7 +73,7 @@ use crate::{
 pub struct Builder {
     display_size: DisplaySize,
     rotation: DisplayRotation,
-    i2c_addr: u8,
+    //i2c_addr: u8,
 }
 
 impl Default for Builder {
@@ -88,7 +88,7 @@ impl Builder {
         Builder {
             display_size: DisplaySize::Display128x64,
             rotation: DisplayRotation::Rotate0,
-            i2c_addr: 0x3c,
+            //i2c_addr: 0x3c,
         }
     }
 }
@@ -104,17 +104,30 @@ impl Builder {
 
     /// Set the I2C address to use. Defaults to 0x3C which is the most common address.
     /// The other address specified in the datasheet is 0x3D. Ignored when using SPI interface.
-    pub fn with_i2c_addr(self, i2c_addr: u8) -> Self {
-        Self { i2c_addr, ..self }
-    }
+    //pub fn with_i2c_addr(self, i2c_addr: u8) -> Self {
+    //    Self { i2c_addr, ..self }
+    //}
 
     /// Set the rotation of the display to one of four values. Defaults to no rotation.
     pub fn with_rotation(self, rotation: DisplayRotation) -> Self {
         Self { rotation, ..self }
     }
 
-    /// Finish the builder and use I2C to communicate with the display
-    pub fn connect_i2c<I2C, CommE>(self, i2c: I2C) -> DisplayMode<RawMode<I2cInterface<I2C>>>
+    /// Finish the builder and use the given interface to communicate with the display.
+    pub fn connect<DI>(self, interface: DI) -> DisplayMode<RawMode<DI>>
+    where
+        DI: display_interface::WriteOnlyDataCommand,
+    {
+        let properties = DisplayProperties::new(
+            interface,
+            self.display_size,
+            self.rotation,
+        );
+        DisplayMode::<RawMode<DI>>::new(properties)
+    }
+
+    // Finish the builder and use I2C to communicate with the display
+    /*pub fn connect_i2c<I2C, CommE>(self, i2c: I2C) -> DisplayMode<RawMode<I2cInterface<I2C>>>
     where
         I2C: hal::blocking::i2c::Write<Error = CommE>,
     {
@@ -124,14 +137,14 @@ impl Builder {
             self.rotation,
         );
         DisplayMode::<RawMode<I2cInterface<I2C>>>::new(properties)
-    }
+    }*/
 
-    /// Finish the builder and use SPI to communicate with the display
-    ///
-    /// If the Chip Select (CS) pin is not required, [`NoOutputPin`] can be used as a dummy argument
-    ///
-    /// [`NoOutputPin`]: ./struct.NoOutputPin.html
-    pub fn connect_spi<SPI, DC, CS, CommE, PinE>(
+    // Finish the builder and use SPI to communicate with the display
+    //
+    // If the Chip Select (CS) pin is not required, [`NoOutputPin`] can be used as a dummy argument
+    //
+    // [`NoOutputPin`]: ./struct.NoOutputPin.html
+    /*pub fn connect_spi<SPI, DC, CS, CommE, PinE>(
         self,
         spi: SPI,
         dc: DC,
@@ -149,8 +162,28 @@ impl Builder {
             self.rotation,
         );
         DisplayMode::<RawMode<SpiInterface<SPI, DC, CS>>>::new(properties)
+    }*/
+}
+
+/// Marker type for no reset pin.
+#[derive(Clone, Copy)]
+pub enum NoOutputPin {}
+
+impl OutputPin for NoOutputPin {
+    fn set_low(&mut self) -> Result<(), Self::Error> {
+        Ok(())
+    }
+
+    fn set_high(&mut self) -> Result<(), Self::Error> {
+        Ok(())
     }
 }
+
+impl hal::digital::ErrorType for NoOutputPin {
+    type Error = core::convert::Infallible;
+}
+
+/*
 
 /// Represents an unused output pin.
 #[derive(Clone, Copy)]
@@ -174,6 +207,7 @@ impl<PinE> OutputPin for NoOutputPin<PinE> {
         Ok(())
     }
 }
+ */
 
 #[cfg(test)]
 mod tests {
