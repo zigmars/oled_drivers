@@ -21,6 +21,10 @@ circle-ci = { repository = "jamwaffles/sh1106", branch = "master" }
 [dependencies]
 embedded-hal = "0.2.3"
 embedded-graphics-core = { version = "0.4.0", optional = true }
+#display-interface = "^ 0.5"
+#defmt = "0.3"
+#defmt-rtt = "0.4"
+#panic-probe = "0.3.1"
 
 [dev-dependencies]
 cortex-m = "0.7.3"
@@ -30,13 +34,36 @@ heapless = "0.7.10"
 panic-semihosting = "0.5.2"
 cortex-m-rtic = "0.5.9"
 
-[dev-dependencies.stm32f1xx-hal]
+[dependencies.stm32f1xx-hal]
 version = "0.7.0"
+optional = true
 features = [ "rt", "stm32f103" ]
+
+#cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
+#cortex-m-rt = { version = "0.6" }
+#panic-semihosting = "0.5.2"
+#panic-reset = "0.1"
+
+
+[dependencies.stm32g4xx-hal]
+optional = true
+version = "0.0.1"
+features = ["rt", "stm32g431"]
+
+[dependencies.stm32f4xx-hal]
+optional = true
+version = "0.9"
+features = ["rt", "stm32f405"]
 
 [features]
 default = ["graphics"]
 graphics = ["embedded-graphics-core"]
+#graphics = ["embedded-graphics"]
+
+# These features are for development/testing
+stm32f1 = ["stm32f1xx-hal"]
+stm32f4 = ["stm32f4xx-hal"]
+stm32g4 = ["stm32g4xx-hal"]
 
 [profile.dev]
 codegen-units = 1
