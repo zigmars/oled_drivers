@@ -56,11 +56,15 @@ fn main() -> ! {
 
     let spi = embassy_stm32::spi::Spi::new_blocking(p.SPI1, p.PA5, p.PA7, p.PA6, spi_config);
 
+    let spi = embedded_hal_bus::spi::ExclusiveDevice::new(spi, cs, Delay);
+
+    let di = display_interface_spi::SPIInterface::new(spi, dc);
+
     let mut disp: GraphicsMode<_> = Builder::new()
             .with_size(crate::DisplaySize::Display128x128)
             //.with_size(crate::DisplaySize::Display128x64)
             .with_rotation(crate::DisplayRotation::Rotate180)
-            .connect_spi(spi, dc, cs).into();
+            .connect(di).into();
 
     let mut delay = Delay {};
 

@@ -42,11 +42,13 @@
 //! display.flush().unwrap();
 //! ```
 
-use hal::{blocking::delay::DelayMs, digital::v2::OutputPin};
+use display_interface::{DisplayError, WriteOnlyDataCommand};
+use hal::{delay::DelayNs, digital::OutputPin};
 
 use crate::{
-    displayrotation::DisplayRotation, interface::DisplayInterface,
-    mode::displaymode::DisplayModeTrait, properties::DisplayProperties, Error,
+    displayrotation::DisplayRotation,
+    mode::displaymode::DisplayModeTrait,
+    properties::DisplayProperties,
 };
 
 const BUFFER_SIZE: usize = 128 * 128 / 8;
@@ -54,7 +56,7 @@ const BUFFER_SIZE: usize = 128 * 128 / 8;
 /// Graphics mode handler
 pub struct GraphicsMode<DI>
 where
-    DI: DisplayInterface,
+    DI: WriteOnlyDataCommand,
 {
     properties: DisplayProperties<DI>,
     buffer: [u8; BUFFER_SIZE],
@@ -62,7 +64,7 @@ where
 
 impl<DI> DisplayModeTrait<DI> for GraphicsMode<DI>
 where
-    DI: DisplayInterface,
+    DI: WriteOnlyDataCommand,
 {
     /// Create new GraphicsMode instance
     fn new(properties: DisplayProperties<DI>) -> Self {
@@ -80,7 +82,7 @@ where
 
 impl<DI> GraphicsMode<DI>
 where
-    DI: DisplayInterface,
+    DI: WriteOnlyDataCommand,
 {
     /// Clear the display buffer. You need to call `display.flush()` for any effect on the screen
     pub fn clear(&mut self) {
@@ -92,20 +94,20 @@ where
         &mut self,
         rst: &mut RST,
         delay: &mut DELAY,
-    ) -> Result<(), Error<(), PinE>>
+    ) -> Result<(), PinE>
     where
         RST: OutputPin<Error = PinE>,
-        DELAY: DelayMs<u8>,
+        DELAY: DelayNs,
     {
-        rst.set_high().map_err(Error::Pin)?;
+        rst.set_high()?;
         delay.delay_ms(1);
-        rst.set_low().map_err(Error::Pin)?;
+        rst.set_low()?;
         delay.delay_ms(10);
-        rst.set_high().map_err(Error::Pin)
+        rst.set_high()
     }
 
     /// Write out data to display
-    pub fn flush(&mut self) -> Result<(), DI::Error> {
+    pub fn flush(&mut self) -> Result<(), DisplayError> {
         let display_size = self.properties.get_size();
 
         // Ensure the display buffer is at the origin of the display before we send the full frame
@@ -174,7 +176,7 @@ where
 
     /// Display is set up in column mode, i.e. a byte walks down a column of 8 pixels from
     /// column 0 on the left, to column _n_ on the right
-    pub fn init(&mut self) -> Result<(), DI::Error> {
+    pub fn init(&mut self) -> Result<(), DisplayError> {
         self.properties.init_column_mode()
     }
 
@@ -184,12 +186,12 @@ where
     }
 
     /// Set the display rotation
-    pub fn set_rotation(&mut self, rot: DisplayRotation) -> Result<(), DI::Error> {
+    pub fn set_rotation(&mut self, rot: DisplayRotation) -> Result<(), DisplayError> {
         self.properties.set_rotation(rot)
     }
 
     /// Set the display contrast
-    pub fn set_contrast(&mut self, contrast: u8) -> Result<(), DI::Error> {
+    pub fn set_contrast(&mut self, contrast: u8) -> Result<(), DisplayError> {
         self.properties.set_contrast(contrast)
     }
 }
@@ -197,8 +199,7 @@ where
 #[cfg(feature = "graphics")]
 use embedded_graphics_core::{
     draw_target::DrawTarget,
-    geometry::Size,
-    geometry::{Dimensions, OriginDimensions},
+    geometry::{Dimensions, OriginDimensions, Size},
     pixelcolor::BinaryColor,
     Pixel,
 };
@@ -206,10 +207,10 @@ use embedded_graphics_core::{
 #[cfg(feature = "graphics")]
 impl<DI> DrawTarget for GraphicsMode<DI>
 where
-    DI: DisplayInterface,
+    DI: WriteOnlyDataCommand,
 {
     type Color = BinaryColor;
-    type Error = core::convert::Infallible;
+    type Error = DisplayError;
 
     fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
     where
@@ -231,7 +232,7 @@ where
 #[cfg(feature = "graphics")]
 impl<DI> OriginDimensions for GraphicsMode<DI>
 where
-    DI: DisplayInterface,
+    DI: WriteOnlyDataCommand,
 {
     fn size(&self) -> Size {
         let (w, h) = self.get_dimensions();
