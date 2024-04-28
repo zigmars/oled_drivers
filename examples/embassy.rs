@@ -18,6 +18,8 @@
 #![no_std]
 #![no_main]
 
+mod bsp;
+
 use cortex_m_rt::entry;
 use embedded_graphics::{
     image::{Image, ImageRawLE},
@@ -30,35 +32,10 @@ use embedded_graphics::{
 use panic_semihosting as _;
 use sh1106::{prelude::*, Builder};
 
-use embassy_stm32::gpio::{Level, Output, Speed};
-use embassy_stm32::time::mhz;
-use embassy_stm32::Config;
-use embassy_time::Delay;
-
-
-
 #[entry]
 fn main() -> ! {
 
-    let mut config = Config::default();
-    {
-        use embassy_stm32::rcc::*;
-        config.rcc.sys = Sysclk::HSI;
-    }
-    let p = embassy_stm32::init(config);
-
-    let mut spi_config = embassy_stm32::spi::Config::default();
-    spi_config.frequency = mhz(1);
-
-    let cs = Output::new(p.PA2, Level::High, Speed::High);
-    let dc = Output::new(p.PA3, Level::High, Speed::High);
-    let mut reset = Output::new(p.PA4, Level::High, Speed::High);
-
-    let spi = embassy_stm32::spi::Spi::new_blocking(p.SPI1, p.PA5, p.PA7, p.PA6, spi_config);
-
-    let spi = embedded_hal_bus::spi::ExclusiveDevice::new(spi, cs, Delay);
-
-    let di = display_interface_spi::SPIInterface::new(spi, dc);
+    let (di, mut reset, mut delay) = bsp::board::get_board();
 
     let mut disp: GraphicsMode<_> = Builder::new()
             .with_size(crate::DisplaySize::Display128x128)
@@ -66,17 +43,9 @@ fn main() -> ! {
             .with_rotation(crate::DisplayRotation::Rotate180)
             .connect(di).into();
 
-    let mut delay = Delay {};
-
-    match disp.reset(&mut reset, &mut delay) {
-        Ok(_) => {}
-        Err(_) => {panic!();}
-    };
-
+    disp.reset(&mut reset, &mut delay).unwrap();
     disp.init().unwrap();
-
     disp.clear();
-
     disp.flush().unwrap();
 
     let im: ImageRawLE<BinaryColor> = ImageRawLE::new(include_bytes!("./rust.raw"), 64);
