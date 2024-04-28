@@ -27,7 +27,7 @@ embedded-graphics-core = { version = "0.4.0", optional = true }
 #panic-probe = "0.3.1"
 
 [dev-dependencies]
-cortex-m = "0.7.3"
+cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.6.10"
 embedded-graphics = "0.8.0"
 heapless = "0.7.10"
@@ -55,6 +55,19 @@ optional = true
 version = "0.9"
 features = ["rt", "stm32f405"]
 
+[dependencies.embassy-stm32]
+optional = true
+version = "0.1.0"
+path = "/home/cschuhen/rust/embassy-corey/embassy-stm32"
+features = ["time-driver-any", "stm32g431cb", "memory-x", "unstable-pac", "exti"]
+
+[dependencies.embassy-time]
+optional = true
+path = "/home/cschuhen/rust/embassy-corey/embassy-time"
+version = "0.3.0"
+features = ["tick-hz-32_768"]
+
+
 [features]
 default = ["graphics"]
 graphics = ["embedded-graphics-core"]
@@ -64,6 +77,7 @@ graphics = ["embedded-graphics-core"]
 stm32f1 = ["stm32f1xx-hal"]
 stm32f4 = ["stm32f4xx-hal"]
 stm32g4 = ["stm32g4xx-hal"]
+embassy-stm32 = ["dep:embassy-time", "dep:embassy-stm32"]
 
 [profile.dev]
 codegen-units = 1
