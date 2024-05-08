@@ -56,6 +56,7 @@
 //! ```
 
 use hal::digital::OutputPin;
+use display_interface::AsyncWriteOnlyDataCommand;
 
 use crate::{
     displayrotation::DisplayRotation,
@@ -106,7 +107,7 @@ impl Builder {
     /// Finish the builder and use the given interface to communicate with the display.
     pub fn connect<DI>(self, interface: DI) -> DisplayMode<RawMode<DI>>
     where
-        DI: display_interface::WriteOnlyDataCommand,
+        DI: AsyncWriteOnlyDataCommand,
     {
         let properties = DisplayProperties::new(
             interface,

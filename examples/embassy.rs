@@ -28,12 +28,14 @@ use embedded_graphics::{
     prelude::*,
     text::{Baseline, Text},
 };
+use embassy_executor::Spawner;
 
+use embedded_hal_async::spi::SpiDevice;
 use panic_semihosting as _;
 use sh1106::{prelude::*, Builder};
 
-#[entry]
-fn main() -> ! {
+#[embassy_executor::main]
+async fn main(_spawner: Spawner) {
 
     let (di, mut reset, mut delay) = bsp::board::get_board();
 
@@ -44,9 +46,9 @@ fn main() -> ! {
             .connect(di).into();
 
     disp.reset(&mut reset, &mut delay).unwrap();
-    disp.init().unwrap();
+    disp.init().await.unwrap();
     disp.clear();
-    disp.flush().unwrap();
+    disp.flush().await.unwrap();
 
     let im: ImageRawLE<BinaryColor> = ImageRawLE::new(include_bytes!("./rust.raw"), 64);
 
@@ -86,7 +88,7 @@ fn main() -> ! {
         } else if dir < 0 && x <= 0 {
             dir = 1;
         }
-        disp.flush().unwrap();
+        disp.flush().await.unwrap();
     }
 }
 

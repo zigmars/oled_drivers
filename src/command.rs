@@ -1,4 +1,4 @@
-use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
+use display_interface::{DataFormat, DisplayError, AsyncWriteOnlyDataCommand};
 
 /// sh1106 Commands
 
@@ -51,9 +51,9 @@ pub enum Command {
 
 impl Command {
     /// Send command to sh1106
-    pub fn send<DI>(self, iface: &mut DI) -> Result<(), DisplayError>
+    pub async fn send<DI>(self, iface: &mut DI) -> Result<(), DisplayError>
     where
-        DI: WriteOnlyDataCommand,
+        DI: AsyncWriteOnlyDataCommand,
     {
         // Transform command into a fixed size array of 7 u8 and the real length for sending
         let (data, len) = match self {
@@ -83,7 +83,7 @@ impl Command {
         };
 
         // Send command over the interface
-        iface.send_commands(DataFormat::U8(&data[0..len]))
+        iface.send_commands(DataFormat::U8(&data[0..len])).await
     }
 }
 

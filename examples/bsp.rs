@@ -11,7 +11,7 @@ use embassy_stm32::Config;
 use embassy_time::Delay;
 
 pub type OutputPin = Output<'static>;
-type Spi = embassy_stm32::spi::Spi<'static, embassy_stm32::peripherals::SPI1, embassy_stm32::mode::Blocking>;
+type Spi = embassy_stm32::spi::Spi<'static, embassy_stm32::peripherals::SPI1, embassy_stm32::mode::Async>;
 type Device = embedded_hal_bus::spi::ExclusiveDevice<Spi, OutputPin, embassy_time::Delay>;
 type DisplayInterface = display_interface_spi::SPIInterface<Device, OutputPin>;
 
@@ -30,7 +30,7 @@ pub fn get_board() -> (DisplayInterface, OutputPin, Delay) {
     let dc = Output::new(p.PA3, Level::High, Speed::High);
     let reset = Output::new(p.PA4, Level::High, Speed::High);
 
-    let spi: Spi = embassy_stm32::spi::Spi::new_blocking(p.SPI1, p.PA5, p.PA7, p.PA6, spi_config);
+    let spi: Spi = embassy_stm32::spi::Spi::new(p.SPI1, p.PA5, p.PA7, p.PA6, p.DMA1_CH1, p.DMA1_CH2, spi_config);
     let spi: Device = embedded_hal_bus::spi::ExclusiveDevice::new(spi, cs, Delay);
     let di: DisplayInterface = display_interface_spi::SPIInterface::new(spi, dc);
 
