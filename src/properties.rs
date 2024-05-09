@@ -4,7 +4,8 @@ use display_interface::{AsyncWriteOnlyDataCommand, DataFormat, DisplayError};
 
 use crate::{
     command::{Command, VcomhLevel},
-    displayrotation::DisplayRotation, displaysize::DisplaySize,
+    displayrotation::DisplayRotation,
+    displaysize::DisplaySize,
 };
 
 /// Display properties struct
@@ -48,8 +49,12 @@ where
         let display_rotation = self.display_rotation;
 
         Command::DisplayOn(false).send(&mut self.iface).await?;
-        Command::DisplayClockDiv(0x8, 0x0).send(&mut self.iface).await?;
-        Command::Multiplex(display_height - 1).send(&mut self.iface).await?;
+        Command::DisplayClockDiv(0x8, 0x0)
+            .send(&mut self.iface)
+            .await?;
+        Command::Multiplex(display_height - 1)
+            .send(&mut self.iface)
+            .await?;
 
         // TODO: combine with match below
         match self.display_size {
@@ -59,7 +64,8 @@ where
             | DisplaySize::Display128x128
             | DisplaySize::Display128x64NoOffset
             | DisplaySize::Display132x64 => Command::DisplayOffset(0).send(&mut self.iface),
-        }.await?;
+        }
+        .await?;
 
         Command::StartLine(0).send(&mut self.iface).await?;
         // TODO: Ability to turn charge pump on/off
@@ -75,11 +81,16 @@ where
             | DisplaySize::Display128x64
             | DisplaySize::Display128x64NoOffset
             | DisplaySize::Display132x64 => Command::ComPinConfig(true).send(&mut self.iface),
-        }.await?;
+        }
+        .await?;
 
         Command::Contrast(0x80).send(&mut self.iface).await?;
-        Command::PreChargePeriod(0x1, 0xF).send(&mut self.iface).await?;
-        Command::VcomhDeselect(VcomhLevel::Auto).send(&mut self.iface).await?;
+        Command::PreChargePeriod(0x1, 0xF)
+            .send(&mut self.iface)
+            .await?;
+        Command::VcomhDeselect(VcomhLevel::Auto)
+            .send(&mut self.iface)
+            .await?;
         Command::AllOn(false).send(&mut self.iface).await?;
         Command::Invert(false).send(&mut self.iface).await?;
         Command::DisplayOn(true).send(&mut self.iface).await?;
@@ -90,7 +101,11 @@ where
     /// Set the position in the framebuffer of the display where any sent data should be
     /// drawn. This method can be used for changing the affected area on the screen as well
     /// as (re-)setting the start point of the next `draw` call.
-    pub async fn set_draw_area(&mut self, start: (u8, u8), end: (u8, u8)) -> Result<(), DisplayError> {
+    pub async fn set_draw_area(
+        &mut self,
+        start: (u8, u8),
+        end: (u8, u8),
+    ) -> Result<(), DisplayError> {
         self.draw_area_start = start;
         self.draw_area_end = end;
         self.draw_column = start.0;
@@ -105,7 +120,9 @@ where
     pub async fn draw(&mut self, mut buffer: &[u8]) -> Result<(), DisplayError> {
         while !buffer.is_empty() {
             let count = self.draw_area_end.0 - self.draw_column;
-            self.iface.send_data(DataFormat::U8(&buffer[..count as usize])).await?;
+            self.iface
+                .send_data(DataFormat::U8(&buffer[..count as usize]))
+                .await?;
             self.draw_column += count;
 
             if self.draw_column >= self.draw_area_end.0 {
@@ -126,9 +143,15 @@ where
     }
 
     async fn send_draw_address(&mut self) -> Result<(), DisplayError> {
-        Command::PageAddress(self.draw_row.into()).send(&mut self.iface).await?;
-        Command::ColumnAddressLow(0xF & self.draw_column).send(&mut self.iface).await?;
-        Command::ColumnAddressHigh(0xF & (self.draw_column >> 4)).send(&mut self.iface).await
+        Command::PageAddress(self.draw_row.into())
+            .send(&mut self.iface)
+            .await?;
+        Command::ColumnAddressLow(0xF & self.draw_column)
+            .send(&mut self.iface)
+            .await?;
+        Command::ColumnAddressHigh(0xF & (self.draw_column >> 4))
+            .send(&mut self.iface)
+            .await
     }
 
     /// Get the configured display size
@@ -152,7 +175,10 @@ where
     }
 
     /// Set the display rotation
-    pub async fn set_rotation(&mut self, display_rotation: DisplayRotation) -> Result<(), DisplayError> {
+    pub async fn set_rotation(
+        &mut self,
+        display_rotation: DisplayRotation,
+    ) -> Result<(), DisplayError> {
         self.display_rotation = display_rotation;
 
         match display_rotation {

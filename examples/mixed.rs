@@ -27,29 +27,25 @@ use embedded_graphics::{
     text::{Baseline, Text},
 };
 
+use embedded_hal::{blocking::delay::DelayMs, digital::v2::OutputPin};
 use panic_semihosting as _;
 use sh1106::{prelude::*, Builder};
 use stm32g4xx_hal::{
     delay::DelayFromCountDownTimer,
-    stm32::Peripherals,
-    timer::Timer,
-
-
-    //i2c::{BlockingI2c, DutyCycle, Mode},
-    spi::Spi,
-    prelude::*,
-    rcc::Config,
     gpio::gpioa::PA5,
     gpio::gpioa::PA6,
     gpio::gpioa::PA7,
-    gpio::AF5,
     gpio::Alternate,
-
+    gpio::AF5,
+    prelude::*,
+    rcc::Config,
+    //i2c::{BlockingI2c, DutyCycle, Mode},
+    spi::Spi,
+    stm32::Peripherals,
+    timer::Timer,
 };
-use embedded_hal::{blocking::delay::DelayMs, digital::v2::OutputPin};
 
 use embedded_hal::spi;
-
 
 #[entry]
 fn main() -> ! {
@@ -81,14 +77,17 @@ fn main() -> ! {
     );
 
     let mut disp: GraphicsMode<_> = Builder::new()
-            .with_size(crate::DisplaySize::Display128x128)
-            //.with_size(crate::DisplaySize::Display128x64)
-            .with_rotation(crate::DisplayRotation::Rotate180)
-            .connect_spi(spi, dc, cs).into();
+        .with_size(crate::DisplaySize::Display128x128)
+        //.with_size(crate::DisplaySize::Display128x64)
+        .with_rotation(crate::DisplayRotation::Rotate180)
+        .connect_spi(spi, dc, cs)
+        .into();
 
     match disp.reset(&mut reset, &mut delay_tim2) {
         Ok(_) => {}
-        Err(_) => {panic!();}
+        Err(_) => {
+            panic!();
+        }
     };
 
     disp.init().unwrap();
@@ -107,28 +106,32 @@ fn main() -> ! {
         (dwidth - iwidth, dheight - iheight)
     };
 
-
     let text_style = MonoTextStyleBuilder::new()
         .font(&FONT_6X10)
         .text_color(BinaryColor::On)
         .build();
 
-
     let mut dir = 1;
     let mut x = 0;
     loop {
-        
         disp.clear();
 
         Text::with_baseline("Hello world!", Point::zero(), text_style, Baseline::Top)
             .draw(&mut disp)
             .unwrap();
 
-        Text::with_baseline("Hello Rust!", Point::new(0, disp.get_dimensions().1 as i32), text_style, Baseline::Bottom)
+        Text::with_baseline(
+            "Hello Rust!",
+            Point::new(0, disp.get_dimensions().1 as i32),
+            text_style,
+            Baseline::Bottom,
+        )
+        .draw(&mut disp)
+        .unwrap();
+
+        Image::new(&im, Point::new(x, y_diff / 2))
             .draw(&mut disp)
             .unwrap();
-
-        Image::new(&im, Point::new(x, y_diff/2)).draw(&mut disp).unwrap();
         x += dir;
         if dir > 0 && x >= x_diff {
             dir = -1;
@@ -138,7 +141,5 @@ fn main() -> ! {
         disp.flush().unwrap();
 
         delay_tim2.delay_ms(10_u16);
-
     }
 }
-

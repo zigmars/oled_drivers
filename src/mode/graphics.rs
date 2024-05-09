@@ -46,8 +46,7 @@ use display_interface::{AsyncWriteOnlyDataCommand, DisplayError};
 use hal::{delay::DelayNs, digital::OutputPin};
 
 use crate::{
-    displayrotation::DisplayRotation,
-    mode::displaymode::DisplayModeTrait,
+    displayrotation::DisplayRotation, mode::displaymode::DisplayModeTrait,
     properties::DisplayProperties,
 };
 
@@ -90,11 +89,7 @@ where
     }
 
     /// Reset display
-    pub fn reset<RST, DELAY, PinE>(
-        &mut self,
-        rst: &mut RST,
-        delay: &mut DELAY,
-    ) -> Result<(), PinE>
+    pub fn reset<RST, DELAY, PinE>(&mut self, rst: &mut RST, delay: &mut DELAY) -> Result<(), PinE>
     where
         RST: OutputPin<Error = PinE>,
         DELAY: DelayNs,

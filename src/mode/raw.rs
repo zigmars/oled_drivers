@@ -6,9 +6,7 @@
 
 use display_interface::AsyncWriteOnlyDataCommand;
 
-use crate::{
-    mode::displaymode::DisplayModeTrait, properties::DisplayProperties,
-};
+use crate::{mode::displaymode::DisplayModeTrait, properties::DisplayProperties};
 
 /// Raw display mode
 pub struct RawMode<DI>

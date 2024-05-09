@@ -100,5 +100,4 @@ pub mod prelude;
 pub mod properties;
 #[doc(hidden)]
 //pub mod test_helpers;
-
 pub use crate::builder::{Builder, NoOutputPin};

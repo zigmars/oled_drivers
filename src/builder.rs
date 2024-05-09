@@ -55,8 +55,8 @@
 //! let display: GraphicsMode<_> = Builder::new().connect_spi(spi, dc, cs).into();
 //! ```
 
-use hal::digital::OutputPin;
 use display_interface::AsyncWriteOnlyDataCommand;
+use hal::digital::OutputPin;
 
 use crate::{
     displayrotation::DisplayRotation,
@@ -109,14 +109,9 @@ impl Builder {
     where
         DI: AsyncWriteOnlyDataCommand,
     {
-        let properties = DisplayProperties::new(
-            interface,
-            self.display_size,
-            self.rotation,
-        );
+        let properties = DisplayProperties::new(interface, self.display_size, self.rotation);
         DisplayMode::<RawMode<DI>>::new(properties)
     }
-
 }
 
 /// Marker type for no reset pin.

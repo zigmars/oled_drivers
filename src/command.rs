@@ -1,4 +1,4 @@
-use display_interface::{DataFormat, DisplayError, AsyncWriteOnlyDataCommand};
+use display_interface::{AsyncWriteOnlyDataCommand, DataFormat, DisplayError};
 
 /// sh1106 Commands
 

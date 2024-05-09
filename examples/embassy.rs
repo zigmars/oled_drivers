@@ -21,6 +21,7 @@
 mod bsp;
 
 use cortex_m_rt::entry;
+use embassy_executor::Spawner;
 use embedded_graphics::{
     image::{Image, ImageRawLE},
     mono_font::{ascii::FONT_6X10, MonoTextStyleBuilder},
@@ -28,7 +29,6 @@ use embedded_graphics::{
     prelude::*,
     text::{Baseline, Text},
 };
-use embassy_executor::Spawner;
 
 use embedded_hal_async::spi::SpiDevice;
 use panic_semihosting as _;
@@ -36,14 +36,14 @@ use sh1106::{prelude::*, Builder};
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-
     let (di, mut reset, mut delay) = bsp::board::get_board();
 
     let mut disp: GraphicsMode<_> = Builder::new()
-            .with_size(crate::DisplaySize::Display128x128)
-            //.with_size(crate::DisplaySize::Display128x64)
-            .with_rotation(crate::DisplayRotation::Rotate180)
-            .connect(di).into();
+        .with_size(crate::DisplaySize::Display128x128)
+        //.with_size(crate::DisplaySize::Display128x64)
+        .with_rotation(crate::DisplayRotation::Rotate180)
+        .connect(di)
+        .into();
 
     disp.reset(&mut reset, &mut delay).unwrap();
     disp.init().await.unwrap();
@@ -60,28 +60,32 @@ async fn main(_spawner: Spawner) {
         (dwidth - iwidth, dheight - iheight)
     };
 
-
     let text_style = MonoTextStyleBuilder::new()
         .font(&FONT_6X10)
         .text_color(BinaryColor::On)
         .build();
 
-
     let mut dir = 1;
     let mut x = 0;
     loop {
-        
         disp.clear();
 
         Text::with_baseline("Hello world!", Point::zero(), text_style, Baseline::Top)
             .draw(&mut disp)
             .unwrap();
 
-        Text::with_baseline("Hello Rust!", Point::new(0, disp.get_dimensions().1 as i32), text_style, Baseline::Bottom)
+        Text::with_baseline(
+            "Hello Rust!",
+            Point::new(0, disp.get_dimensions().1 as i32),
+            text_style,
+            Baseline::Bottom,
+        )
+        .draw(&mut disp)
+        .unwrap();
+
+        Image::new(&im, Point::new(x, y_diff / 2))
             .draw(&mut disp)
             .unwrap();
-
-        Image::new(&im, Point::new(x, y_diff/2)).draw(&mut disp).unwrap();
         x += dir;
         if dir > 0 && x >= x_diff {
             dir = -1;
@@ -91,4 +95,3 @@ async fn main(_spawner: Spawner) {
         disp.flush().await.unwrap();
     }
 }
-
