@@ -60,7 +60,6 @@ use hal::digital::OutputPin;
 
 use crate::{
     displayrotation::DisplayRotation,
-    displaysize::DisplaySize,
     mode::{displaymode::DisplayMode, raw::RawMode},
     properties::DisplayProperties,
 };
@@ -69,48 +68,35 @@ use crate::{
 ///
 /// See the [module level documentation](crate::builder) for more details.
 #[derive(Clone, Copy)]
-pub struct Builder {
-    display_size: DisplaySize,
+pub struct Builder<DV> {
+    variant: DV,
     rotation: DisplayRotation,
 }
 
-impl Default for Builder {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Builder {
+impl<DV> Builder<DV> {
     /// Create new builder with a default size of 128 x 64 pixels and no rotation.
-    pub fn new() -> Builder {
-        Builder {
-            display_size: DisplaySize::Display128x64,
+    pub fn new(variant: DV) -> Builder<DV> {
+        Builder::<DV> {
+            variant,
             rotation: DisplayRotation::Rotate0,
         }
     }
 }
 
-impl Builder {
-    /// Set the size of the display. Supported sizes are defined by [DisplaySize].
-    pub fn with_size(self, display_size: DisplaySize) -> Self {
-        Self {
-            display_size,
-            ..self
-        }
-    }
-
+impl<DV> Builder<DV> {
     /// Set the rotation of the display to one of four values. Defaults to no rotation.
     pub fn with_rotation(self, rotation: DisplayRotation) -> Self {
         Self { rotation, ..self }
     }
 
     /// Finish the builder and use the given interface to communicate with the display.
-    pub fn connect<DI>(self, interface: DI) -> DisplayMode<RawMode<DI>>
+    pub fn connect<DI>(self, interface: DI) -> DisplayMode<RawMode<DV, DI>>
     where
         DI: AsyncWriteOnlyDataCommand,
+        DV: crate::display::DisplayVariant,
     {
-        let properties = DisplayProperties::new(interface, self.display_size, self.rotation);
-        DisplayMode::<RawMode<DI>>::new(properties)
+        let properties = DisplayProperties::new(self.variant, interface, self.rotation);
+        DisplayMode::<RawMode<DV, DI>>::new(properties)
     }
 }
 

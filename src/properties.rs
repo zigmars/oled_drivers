@@ -4,14 +4,14 @@ use display_interface::{AsyncWriteOnlyDataCommand, DataFormat, DisplayError};
 
 use crate::{
     command::{Command, VcomhLevel},
+    display::DisplayVariant,
     displayrotation::DisplayRotation,
-    displaysize::DisplaySize,
 };
 
 /// Display properties struct
-pub struct DisplayProperties<DI> {
+pub struct DisplayProperties<DV, DI> {
+    variant: DV,
     iface: DI,
-    display_size: DisplaySize,
     display_rotation: DisplayRotation,
     draw_area_start: (u8, u8),
     draw_area_end: (u8, u8),
@@ -19,19 +19,20 @@ pub struct DisplayProperties<DI> {
     draw_row: u8,
 }
 
-impl<DI> DisplayProperties<DI>
+impl<DV, DI> DisplayProperties<DV, DI>
 where
     DI: AsyncWriteOnlyDataCommand,
+    DV: DisplayVariant,
 {
     /// Create new DisplayProperties instance
     pub fn new(
+        variant: DV,
         iface: DI,
-        display_size: DisplaySize,
         display_rotation: DisplayRotation,
-    ) -> DisplayProperties<DI> {
+    ) -> DisplayProperties<DV, DI> {
         DisplayProperties {
+            variant,
             iface,
-            display_size,
             display_rotation,
             draw_area_start: (0, 0),
             draw_area_end: (0, 0),
@@ -45,7 +46,7 @@ where
     pub async fn init_column_mode(&mut self) -> Result<(), DisplayError> {
         //self.iface.init().await?;
         // TODO: Break up into nice bits so display modes can pick whathever they need
-        let (_, display_height) = self.display_size.dimensions();
+        let (_, display_height) = DV::dimensions();
         let display_rotation = self.display_rotation;
 
         Command::DisplayOn(false).send(&mut self.iface).await?;
@@ -57,7 +58,7 @@ where
             .await?;
 
         // TODO: combine with match below
-        match self.display_size {
+        /*match self.display_size {
             DisplaySize::Display64x128 => Command::DisplayOffset(0x60).send(&mut self.iface),
             DisplaySize::Display128x32
             | DisplaySize::Display128x64
@@ -65,7 +66,7 @@ where
             | DisplaySize::Display128x64NoOffset
             | DisplaySize::Display132x64 => Command::DisplayOffset(0).send(&mut self.iface),
         }
-        .await?;
+        .await?;*/
 
         Command::StartLine(0).send(&mut self.iface).await?;
         // TODO: Ability to turn charge pump on/off
@@ -74,7 +75,7 @@ where
 
         self.set_rotation(display_rotation).await?;
 
-        match self.display_size {
+        /*match self.display_size {
             DisplaySize::Display128x32 => Command::ComPinConfig(false).send(&mut self.iface),
             DisplaySize::Display64x128
             | DisplaySize::Display128x128
@@ -82,7 +83,7 @@ where
             | DisplaySize::Display128x64NoOffset
             | DisplaySize::Display132x64 => Command::ComPinConfig(true).send(&mut self.iface),
         }
-        .await?;
+        .await?;*/
 
         Command::Contrast(0x80).send(&mut self.iface).await?;
         Command::PreChargePeriod(0x1, 0xF)
@@ -154,14 +155,14 @@ where
             .await
     }
 
-    /// Get the configured display size
-    pub fn get_size(&self) -> DisplaySize {
-        self.display_size
-    }
+    // Get the configured display size
+    //pub fn get_size(&self) -> DisplaySize {
+    //    self.display_size
+    //}
 
     /// Get display dimensions, taking into account the current rotation of the display
     pub fn get_dimensions(&self) -> (u8, u8) {
-        let (w, h) = self.display_size.dimensions();
+        let (w, h) = DV::dimensions();
 
         match self.display_rotation {
             DisplayRotation::Rotate0 | DisplayRotation::Rotate180 => (w, h),

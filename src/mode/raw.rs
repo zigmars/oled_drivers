@@ -6,34 +6,35 @@
 
 use display_interface::AsyncWriteOnlyDataCommand;
 
-use crate::{mode::displaymode::DisplayModeTrait, properties::DisplayProperties};
+use crate::{display, mode::displaymode::DisplayModeTrait, properties::DisplayProperties};
 
 /// Raw display mode
-pub struct RawMode<DI>
+pub struct RawMode<DV, DI>
 where
     DI: AsyncWriteOnlyDataCommand,
 {
-    properties: DisplayProperties<DI>,
+    properties: DisplayProperties<DV, DI>,
 }
 
-impl<DI> DisplayModeTrait<DI> for RawMode<DI>
+impl<DV, DI> DisplayModeTrait<DV, DI> for RawMode<DV, DI>
 where
     DI: AsyncWriteOnlyDataCommand,
+    DV: crate::display::DisplayVariant,
 {
     /// Create new RawMode instance
-    fn new(properties: DisplayProperties<DI>) -> Self {
+    fn new(properties: DisplayProperties<DV, DI>) -> Self {
         RawMode { properties }
     }
 
     /// Release all resources used by RawMode
-    fn release(self) -> DisplayProperties<DI> {
+    fn release(self) -> DisplayProperties<DV, DI> {
         self.properties
     }
 }
 
-impl<DI: AsyncWriteOnlyDataCommand> RawMode<DI> {
+impl<DV: display::DisplayVariant, DI: AsyncWriteOnlyDataCommand> RawMode<DV, DI> {
     /// Create a new raw display mode
-    pub fn new(properties: DisplayProperties<DI>) -> Self {
+    pub fn new(properties: DisplayProperties<DV, DI>) -> Self {
         RawMode { properties }
     }
 }

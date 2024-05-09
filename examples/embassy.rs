@@ -38,11 +38,10 @@ use sh1106::{prelude::*, Builder};
 async fn main(_spawner: Spawner) {
     let (di, mut reset, mut delay) = bsp::board::get_board();
 
-    let mut disp: GraphicsMode<_> = Builder::new()
-        .with_size(crate::DisplaySize::Display128x128)
-        //.with_size(crate::DisplaySize::Display128x64)
+    let mut disp: GraphicsMode<_, _> = Builder::new(sh1106::displays::sh1107::Sh1107_128_128 {})
         .with_rotation(crate::DisplayRotation::Rotate180)
         .connect(di)
+        //.connect::<sh1106::display::Sh1107_128_128, _>(di)
         .into();
 
     disp.reset(&mut reset, &mut delay).unwrap();
