@@ -1,5 +1,7 @@
 //! Display variant
 
+use display_interface::{AsyncWriteOnlyDataCommand, DisplayError};
+
 /// Trait to represent a speciffic display
 pub trait DisplayVariant {
     /// Get integral dimensions from DisplaySize
@@ -15,4 +17,10 @@ pub trait DisplayVariant {
 
     /// Coumn offset
     fn column_offset() -> u8;
+
+    /// Initialise the display for column mode
+    #[allow(async_fn_in_trait)]
+    async fn init_column_mode<DI>(iface: &mut DI) -> Result<(), DisplayError>
+    where
+        DI: AsyncWriteOnlyDataCommand;
 }

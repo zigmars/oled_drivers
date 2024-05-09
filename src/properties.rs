@@ -2,15 +2,11 @@
 
 use display_interface::{AsyncWriteOnlyDataCommand, DataFormat, DisplayError};
 
-use crate::{
-    command::{Command, VcomhLevel},
-    display::DisplayVariant,
-    displayrotation::DisplayRotation,
-};
+use crate::{command::Command, display::DisplayVariant, displayrotation::DisplayRotation};
 
 /// Display properties struct
 pub struct DisplayProperties<DV, DI> {
-    variant: DV,
+    _variant: DV,
     iface: DI,
     display_rotation: DisplayRotation,
     draw_area_start: (u8, u8),
@@ -31,7 +27,7 @@ where
         display_rotation: DisplayRotation,
     ) -> DisplayProperties<DV, DI> {
         DisplayProperties {
-            variant,
+            _variant: variant,
             iface,
             display_rotation,
             draw_area_start: (0, 0),
@@ -44,57 +40,9 @@ where
     /// Initialise the display in column mode (i.e. a byte walks down a column of 8 pixels) with
     /// column 0 on the left and column _(display_width - 1)_ on the right.
     pub async fn init_column_mode(&mut self) -> Result<(), DisplayError> {
-        //self.iface.init().await?;
-        // TODO: Break up into nice bits so display modes can pick whathever they need
-        let (_, display_height) = DV::dimensions();
         let display_rotation = self.display_rotation;
-
-        Command::DisplayOn(false).send(&mut self.iface).await?;
-        Command::DisplayClockDiv(0x8, 0x0)
-            .send(&mut self.iface)
-            .await?;
-        Command::Multiplex(display_height - 1)
-            .send(&mut self.iface)
-            .await?;
-
-        // TODO: combine with match below
-        /*match self.display_size {
-            DisplaySize::Display64x128 => Command::DisplayOffset(0x60).send(&mut self.iface),
-            DisplaySize::Display128x32
-            | DisplaySize::Display128x64
-            | DisplaySize::Display128x128
-            | DisplaySize::Display128x64NoOffset
-            | DisplaySize::Display132x64 => Command::DisplayOffset(0).send(&mut self.iface),
-        }
-        .await?;*/
-
-        Command::StartLine(0).send(&mut self.iface).await?;
-        // TODO: Ability to turn charge pump on/off
-        // Display must be off when performing this command
-        Command::ChargePump(true).send(&mut self.iface).await?;
-
+        DV::init_column_mode(&mut self.iface).await?;
         self.set_rotation(display_rotation).await?;
-
-        /*match self.display_size {
-            DisplaySize::Display128x32 => Command::ComPinConfig(false).send(&mut self.iface),
-            DisplaySize::Display64x128
-            | DisplaySize::Display128x128
-            | DisplaySize::Display128x64
-            | DisplaySize::Display128x64NoOffset
-            | DisplaySize::Display132x64 => Command::ComPinConfig(true).send(&mut self.iface),
-        }
-        .await?;*/
-
-        Command::Contrast(0x80).send(&mut self.iface).await?;
-        Command::PreChargePeriod(0x1, 0xF)
-            .send(&mut self.iface)
-            .await?;
-        Command::VcomhDeselect(VcomhLevel::Auto)
-            .send(&mut self.iface)
-            .await?;
-        Command::AllOn(false).send(&mut self.iface).await?;
-        Command::Invert(false).send(&mut self.iface).await?;
-        Command::DisplayOn(true).send(&mut self.iface).await?;
 
         Ok(())
     }

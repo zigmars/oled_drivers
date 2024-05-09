@@ -20,7 +20,6 @@
 
 mod bsp;
 
-use cortex_m_rt::entry;
 use embassy_executor::Spawner;
 use embedded_graphics::{
     image::{Image, ImageRawLE},
@@ -30,7 +29,6 @@ use embedded_graphics::{
     text::{Baseline, Text},
 };
 
-use embedded_hal_async::spi::SpiDevice;
 use panic_semihosting as _;
 use sh1106::{prelude::*, Builder};
 
