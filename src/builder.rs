@@ -11,14 +11,14 @@
 //! Connect over SPI with default rotation (0 deg) and size (128x64):
 //!
 //! ```rust,no_run
-//! use sh1106::{mode::GraphicsMode, Builder};
+//! use oled_async::{mode::GraphicsMode, Builder};
 //! let spi = /* SPI interface from your HAL of choice */
-//! # sh1106::test_helpers::SpiStub;
+//! # oled_async::test_helpers::SpiStub;
 //! let dc = /* GPIO data/command select pin */
-//! # sh1106::test_helpers::PinStub;
+//! # oled_async::test_helpers::PinStub;
 //!
 //! // This example does not use a Chip Select pin
-//! let cs = sh1106::builder::NoOutputPin::new();
+//! let cs = oled_async::builder::NoOutputPin::new();
 //!
 //! Builder::new().connect_spi(spi, dc, cs);
 //! ```
@@ -26,10 +26,10 @@
 //! Connect over I2C, changing lots of options
 //!
 //! ```rust,no_run
-//! use sh1106::{displayrotation::DisplayRotation, displaysize::DisplaySize, Builder};
+//! use oled_async::{displayrotation::DisplayRotation, displaysize::DisplaySize, Builder};
 //!
 //! let i2c = /* I2C interface from your HAL of choice */
-//! # sh1106::test_helpers::I2cStub;
+//! # oled_async::test_helpers::I2cStub;
 //!
 //! Builder::new()
 //!     .with_rotation(DisplayRotation::Rotate180)
@@ -43,14 +43,14 @@
 //! example, to use [`GraphicsMode` mode](../mode/graphics/struct.GraphicsMode.html):
 //!
 //! ```rust,no_run
-//! use sh1106::{mode::GraphicsMode, Builder};
+//! use oled_async::{mode::GraphicsMode, Builder};
 //! let spi = /* SPI interface from your HAL of choice */
-//! # sh1106::test_helpers::SpiStub;
+//! # oled_async::test_helpers::SpiStub;
 //! let dc = /* GPIO data/command select pin */
-//! # sh1106::test_helpers::PinStub;
+//! # oled_async::test_helpers::PinStub;
 //!
 //! // This example does not use a Chip Select pin
-//! let cs = sh1106::builder::NoOutputPin::new();
+//! let cs = oled_async::builder::NoOutputPin::new();
 //!
 //! let display: GraphicsMode<_> = Builder::new().connect_spi(spi, dc, cs).into();
 //! ```

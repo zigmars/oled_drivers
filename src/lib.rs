@@ -1,4 +1,4 @@
-//! sh1106 OLED display driver
+//! oled_async OLED display driver
 //!
 //! The driver must be initialised by passing an I2C or SPI interface peripheral to the
 //! [`Builder`](builder/struct.Builder.html),
@@ -10,8 +10,8 @@
 //! this:
 //!
 //! ```rust,no_run
-//! use sh1106::{prelude::*, Builder};
-//! # let i2c = sh1106::test_helpers::I2cStub;
+//! use oled_async::{prelude::*, Builder};
+//! # let i2c = oled_async::test_helpers::I2cStub;
 //!
 //! let mut display: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
 //!
@@ -23,7 +23,7 @@
 //! display.flush().unwrap();
 //! ```
 //!
-//! See the [example](https://github.com/jamwaffles/sh1106/blob/master/examples/graphics_i2c.rs)
+//! See the [example](https://github.com/jamwaffles/oled_async/blob/master/examples/graphics_i2c.rs)
 //! for more usage. The [entire `embedded_graphics` featureset](https://github.com/jamwaffles/embedded-graphics#features)
 //! is supported by this driver.
 //!
@@ -33,7 +33,7 @@
 //! # Examples
 //!
 //! Examples can be found in
-//! [the examples/ folder](https://github.com/jamwaffles/sh1106/blob/master/examples)
+//! [the examples/ folder](https://github.com/jamwaffles/oled_async/blob/master/examples)
 //!
 //! ## Draw some text to the display
 //!
@@ -46,8 +46,8 @@
 //!     prelude::*,
 //!     text::{Baseline, Text},
 //! };
-//! use sh1106::{prelude::*, Builder};
-//! # let i2c = sh1106::test_helpers::I2cStub;
+//! use oled_async::{prelude::*, Builder};
+//! # let i2c = oled_async::test_helpers::I2cStub;
 //!
 //! let mut display: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
 //!

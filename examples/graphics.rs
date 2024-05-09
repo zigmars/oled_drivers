@@ -23,8 +23,8 @@ use embedded_graphics::{
     prelude::*,
     primitives::{Circle, Line, PrimitiveStyle, Rectangle},
 };
+use oled_async::{prelude::*, Builder};
 use panic_semihosting as _;
-use sh1106::{prelude::*, Builder};
 use stm32f1xx_hal::{
     i2c::{BlockingI2c, DutyCycle, Mode},
     prelude::*,

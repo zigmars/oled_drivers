@@ -1,4 +1,4 @@
-//! Draw a 1 bit per pixel black and white image. On a 128x64 sh1106 display over SPI.
+//! Draw a 1 bit per pixel black and white image. On a 128x64 oled_async display over SPI.
 //!
 //! Image was created with ImageMagick:
 //!
@@ -32,8 +32,8 @@ use embedded_graphics::{
     prelude::*,
 };
 use embedded_hal::spi;
+use oled_async::{prelude::*, Builder};
 use panic_semihosting as _;
-use sh1106::{prelude::*, Builder};
 use stm32f1xx_hal::{prelude::*, spi::Spi, stm32};
 
 #[entry]
@@ -69,7 +69,7 @@ fn main() -> ! {
 
     // If you aren't using the Chip Select pin, use this instead:
     // let mut display: GraphicsMode<_> = Builder::new()
-    //     .connect_spi(spi, dc, sh1106::builder::NoOutputPin::new())
+    //     .connect_spi(spi, dc, oled_async::builder::NoOutputPin::new())
     //     .into();
 
     display.init().unwrap();

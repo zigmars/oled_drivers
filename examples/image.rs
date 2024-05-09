@@ -1,4 +1,4 @@
-//! Draw a 1 bit per pixel black and white image. On a 128x64 sh1106 display over I2C.
+//! Draw a 1 bit per pixel black and white image. On a 128x64 oled_async display over I2C.
 //!
 //! Image was created with ImageMagick:
 //!
@@ -29,8 +29,8 @@ use embedded_graphics::{
     pixelcolor::BinaryColor,
     prelude::*,
 };
+use oled_async::{prelude::*, Builder};
 use panic_semihosting as _;
-use sh1106::{prelude::*, Builder};
 use stm32f1xx_hal::{
     i2c::{BlockingI2c, DutyCycle, Mode},
     prelude::*,

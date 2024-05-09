@@ -1,6 +1,6 @@
 use display_interface::{AsyncWriteOnlyDataCommand, DataFormat, DisplayError};
 
-/// sh1106 Commands
+/// oled_async Commands
 
 /// Commands
 #[derive(Debug)]
@@ -50,7 +50,7 @@ pub enum Command {
 }
 
 impl Command {
-    /// Send command to sh1106
+    /// Send command to oled_async
     pub async fn send<DI>(self, iface: &mut DI) -> Result<(), DisplayError>
     where
         DI: AsyncWriteOnlyDataCommand,

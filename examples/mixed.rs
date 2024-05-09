@@ -28,8 +28,8 @@ use embedded_graphics::{
 };
 
 use embedded_hal::{blocking::delay::DelayMs, digital::v2::OutputPin};
+use oled_async::{prelude::*, Builder};
 use panic_semihosting as _;
-use sh1106::{prelude::*, Builder};
 use stm32g4xx_hal::{
     delay::DelayFromCountDownTimer,
     gpio::gpioa::PA5,

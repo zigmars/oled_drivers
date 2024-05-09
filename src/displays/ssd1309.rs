@@ -1,11 +1,11 @@
-//! SH1107 display variants and specifics
+//! SSD1309 display variants and specifics
 
 use crate::display::DisplayVariant;
 use display_interface::{AsyncWriteOnlyDataCommand, DisplayError};
 
 use crate::command::{Command, VcomhLevel};
 
-/// Generic 128x128 with SH1107 controller
+/// Generic 128x128 with SSD1309 controller
 #[derive(Debug, Clone, Copy)]
 pub struct Ssd1309_128_64 {}
 

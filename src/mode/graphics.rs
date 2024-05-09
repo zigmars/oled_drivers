@@ -6,8 +6,8 @@
 //!     prelude::*,
 //!     primitives::{Circle, Line, PrimitiveStyle, Rectangle},
 //! };
-//! use sh1106::{prelude::*, Builder};
-//! # let i2c = sh1106::test_helpers::I2cStub;
+//! use oled_async::{prelude::*, Builder};
+//! # let i2c = oled_async::test_helpers::I2cStub;
 //!
 //! let mut display: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
 //!
