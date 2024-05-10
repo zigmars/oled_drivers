@@ -109,7 +109,7 @@ where
         // Ensure the display buffer is at the origin of the display before we send the full frame
         // to prevent accidental offsets
         let (display_width, display_height) = DV::dimensions();
-        let column_offset = DV::column_offset();
+        let column_offset = DV::COLUMN_OFFSET;
         self.properties
             .set_draw_area(
                 (column_offset, 0),

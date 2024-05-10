@@ -4,19 +4,17 @@ use display_interface::{AsyncWriteOnlyDataCommand, DisplayError};
 
 /// Trait to represent a speciffic display
 pub trait DisplayVariant {
+    /// Width of display
+    const WIDTH: u8;
+    /// Height of display
+    const HEIGHT: u8;
+    /// Coumn offset
+    const COLUMN_OFFSET: u8 = 0;
+
     /// Get integral dimensions from DisplaySize
     fn dimensions() -> (u8, u8) {
-        (Self::width(), Self::height())
+        (Self::WIDTH, Self::HEIGHT)
     }
-
-    /// Width of display
-    fn width() -> u8;
-
-    /// Height of display
-    fn height() -> u8;
-
-    /// Coumn offset
-    fn column_offset() -> u8;
 
     /// Initialise the display for column mode
     #[allow(async_fn_in_trait)]

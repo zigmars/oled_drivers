@@ -10,15 +10,8 @@ use crate::command::{Command, VcomhLevel};
 pub struct Ssd1309_128_64 {}
 
 impl DisplayVariant for Ssd1309_128_64 {
-    fn width() -> u8 {
-        128
-    }
-    fn height() -> u8 {
-        64
-    }
-    fn column_offset() -> u8 {
-        0
-    }
+    const WIDTH: u8 = 128;
+    const HEIGHT: u8 = 64;
 
     async fn init_column_mode<DI>(
         iface: &mut DI,

@@ -10,15 +10,8 @@ use crate::command::{Command, VcomhLevel};
 pub struct Sh1107_128_128 {}
 
 impl DisplayVariant for Sh1107_128_128 {
-    fn width() -> u8 {
-        128
-    }
-    fn height() -> u8 {
-        128
-    }
-    fn column_offset() -> u8 {
-        0
-    }
+    const WIDTH: u8 = 128;
+    const HEIGHT: u8 = 128;
 
     async fn init_column_mode<DI>(
         iface: &mut DI,
