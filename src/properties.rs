@@ -77,7 +77,7 @@ where
             if self.draw_column >= self.draw_area_end.0 {
                 self.draw_column = self.draw_area_start.0;
 
-                self.draw_row += 8;
+                self.draw_row += 1;
                 if self.draw_row >= self.draw_area_end.1 {
                     self.draw_row = self.draw_area_start.1;
                 }
@@ -148,6 +148,12 @@ where
                 Command::ReverseComDir(false).send(&mut self.iface).await
             }
         }
+    }
+
+    /// Turn the display on or off. The display can be drawn to and retains all
+    /// of its memory even while off.
+    pub async fn display_on(&mut self, on: bool) -> Result<(), DisplayError> {
+        Command::DisplayOn(on).send(&mut self.iface).await
     }
 
     /// Set the display contrast

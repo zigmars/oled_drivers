@@ -6,6 +6,10 @@ use display_interface::{AsyncWriteOnlyDataCommand, DataFormat, DisplayError};
 #[derive(Debug)]
 #[allow(dead_code)]
 pub enum Command {
+    /// Set the addressing mode.
+    /// `false` is page addressing mode.
+    /// `true` is vertical addressing mode.
+    AddressMode(bool),
     /// Set contrast. Higher number is higher contrast. Default = 0x7F
     Contrast(u8),
     /// Turn entire display on. If set, all pixels will
@@ -13,6 +17,8 @@ pub enum Command {
     AllOn(bool),
     /// Invert display.
     Invert(bool),
+    /// Set display resolution.
+    DisplayResolution(u8),
     /// Turn display on or off.
     DisplayOn(bool),
     /// Set column address lower 4 bits
@@ -20,14 +26,17 @@ pub enum Command {
     /// Set column address higher 4 bits
     ColumnAddressHigh(u8),
     /// Set page address
-    PageAddress(Page),
+    PageAddress(u8),
     /// Set display start line from 0-63
     StartLine(u8),
     /// Reverse columns from 127-0
     SegmentRemap(bool),
     /// Set multipex ratio from 15-63 (MUX-1)
     Multiplex(u8),
-    /// Scan from COM[n-1] to COM0 (where N is mux ratio)
+    /// Set the scan direction of the output.
+    /// `false` scans from COM0 to COM[n-1].
+    /// `true` scans from COM[n-1] to COM0.
+    /// Also known as SetCommonScanDir
     ReverseComDir(bool),
     /// Set vertical shift
     DisplayOffset(u8),
@@ -57,13 +66,15 @@ impl Command {
     {
         // Transform command into a fixed size array of 7 u8 and the real length for sending
         let (data, len) = match self {
+            Command::AddressMode(mode) => ([0x20 | (mode as u8), 0, 0, 0, 0, 0, 0], 1),
             Command::Contrast(val) => ([0x81, val, 0, 0, 0, 0, 0], 2),
             Command::AllOn(on) => ([0xA4 | (on as u8), 0, 0, 0, 0, 0, 0], 1),
             Command::Invert(inv) => ([0xA6 | (inv as u8), 0, 0, 0, 0, 0, 0], 1),
+            Command::DisplayResolution(resolution) => ([0xA9, resolution, 0, 0, 0, 0, 0], 2),
             Command::DisplayOn(on) => ([0xAE | (on as u8), 0, 0, 0, 0, 0, 0], 1),
             Command::ColumnAddressLow(addr) => ([0xF & addr, 0, 0, 0, 0, 0, 0], 1),
             Command::ColumnAddressHigh(addr) => ([0x10 | (0xF & addr), 0, 0, 0, 0, 0, 0], 1),
-            Command::PageAddress(page) => ([0xB0 | (page as u8), 0, 0, 0, 0, 0, 0], 1),
+            Command::PageAddress(page) => ([0xB0 | (page), 0, 0, 0, 0, 0, 0], 1),
             Command::StartLine(line) => ([0x40 | (0x3F & line), 0, 0, 0, 0, 0, 0], 1),
             Command::SegmentRemap(remap) => ([0xA0 | (remap as u8), 0, 0, 0, 0, 0, 0], 1),
             Command::Multiplex(ratio) => ([0xA8, ratio, 0, 0, 0, 0, 0], 2),
@@ -84,67 +95,6 @@ impl Command {
 
         // Send command over the interface
         iface.send_commands(DataFormat::U8(&data[0..len])).await
-    }
-}
-
-/// Display page
-#[derive(Debug, Clone, Copy)]
-pub enum Page {
-    /// Page 0
-    Page0 = 0,
-    /// Page 1
-    Page1 = 1,
-    /// Page 2
-    Page2 = 2,
-    /// Page 3
-    Page3 = 3,
-    /// Page 4
-    Page4 = 4,
-    /// Page 5
-    Page5 = 5,
-    /// Page 6
-    Page6 = 6,
-    /// Page 7
-    Page7 = 7,
-    /// Page 8
-    Page8 = 8,
-    /// Page 9
-    Page9 = 9,
-    /// Page 10
-    Page10 = 10,
-    /// Page 11
-    Page11 = 11,
-    /// Page 12
-    Page12 = 12,
-    /// Page 13
-    Page13 = 13,
-    /// Page 14
-    Page14 = 14,
-    /// Page 15
-    Page15 = 15,
-}
-
-impl From<u8> for Page {
-    fn from(val: u8) -> Page {
-        match val / 8 {
-            0 => Page::Page0,
-            1 => Page::Page1,
-            2 => Page::Page2,
-            3 => Page::Page3,
-            4 => Page::Page4,
-            5 => Page::Page5,
-            6 => Page::Page6,
-            7 => Page::Page7,
-            8 => Page::Page8,
-            9 => Page::Page9,
-            10 => Page::Page10,
-            11 => Page::Page11,
-            12 => Page::Page12,
-            13 => Page::Page13,
-            14 => Page::Page14,
-            15 => Page::Page15,
-            _ => panic!("Page too high"),
-        }
     }
 }
 

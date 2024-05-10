@@ -36,8 +36,9 @@ use {defmt_rtt as _, panic_probe as _};
 async fn main(_spawner: Spawner) {
     let (di, mut reset, mut delay) = bsp::board::get_board();
 
-    //type Display = oled_async::displays::sh1107::Sh1107_128_128;
-    type Display = oled_async::displays::ssd1309::Ssd1309_128_64;
+    type Display = oled_async::displays::sh1107::Sh1107_128_128;
+    //type Display = oled_async::displays::sh1108::Sh1108_64_160;
+    //type Display = oled_async::displays::ssd1309::Ssd1309_128_64;
     let mut disp: GraphicsMode<_, _> = Builder::new(Display {})
         .with_rotation(crate::DisplayRotation::Rotate180)
         .connect(di)

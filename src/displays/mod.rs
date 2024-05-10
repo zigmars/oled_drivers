@@ -4,4 +4,5 @@
 //! methods it exposes. Look at the modes below for more information on what they expose.
 
 pub mod sh1107;
+pub mod sh1108;
 pub mod ssd1309;

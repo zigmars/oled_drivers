@@ -50,7 +50,7 @@ use crate::{
     properties::DisplayProperties,
 };
 
-const BUFFER_SIZE: usize = 128 * 128 / 8;
+const BUFFER_SIZE: usize = 160 * 160 / 8;
 
 /// Graphics mode handler
 pub struct GraphicsMode<DV, DI>
@@ -186,6 +186,12 @@ where
     /// Set the display rotation
     pub async fn set_rotation(&mut self, rot: DisplayRotation) -> Result<(), DisplayError> {
         self.properties.set_rotation(rot).await
+    }
+
+    /// Turn the display on or off. The display can be drawn to and retains all
+    /// of its memory even while off.
+    pub async fn display_on(&mut self, on: bool) -> Result<(), DisplayError> {
+        self.properties.display_on(on).await
     }
 
     /// Set the display contrast
