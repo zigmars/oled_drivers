@@ -33,7 +33,7 @@ cortex-m-rtic = "0.5.9"
 display-interface-i2c = "^ 0.5"
 display-interface-spi = "^ 0.5"
 embedded-hal-bus = { version = "0.1", features = ["async"] }
-embassy-executor = { version = "0.5.0", path = "/home/cschuhen/rust/embassy-corey/embassy-executor", features = ["defmt", "arch-cortex-m", "executor-thread", "integrated-timers", "task-arena-size-8192"] }
+embassy-executor = { version = "0.5.0", git = "https://github.com/embassy-rs/embassy", rev = "9cbbedef793d619c659c6a81080675282690a8af" , features = ["defmt", "arch-cortex-m", "executor-thread", "integrated-timers", "task-arena-size-8192"] }
 embedded-hal-async = { version = "1.0" }
 defmt = "0.3"
 defmt-rtt = "0.4"
@@ -43,12 +43,6 @@ panic-probe = { version = "0.3.1", features = ["print-defmt"] }
 version = "0.7.0"
 optional = true
 features = [ "rt", "stm32f103" ]
-
-#cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
-#cortex-m-rt = { version = "0.6" }
-#panic-semihosting = "0.5.2"
-#panic-reset = "0.1"
-
 
 [dependencies.stm32g4xx-hal]
 optional = true
@@ -63,12 +57,14 @@ features = ["rt", "stm32f405"]
 [dependencies.embassy-stm32]
 optional = true
 version = "0.1.0"
-path = "/home/cschuhen/rust/embassy-corey/embassy-stm32"
+git = "https://github.com/embassy-rs/embassy"
+rev = "9cbbedef793d619c659c6a81080675282690a8af"
 features = ["defmt", "time-driver-any", "stm32g431cb", "memory-x", "unstable-pac", "exti"]
 
 [dependencies.embassy-time]
 optional = true
-path = "/home/cschuhen/rust/embassy-corey/embassy-time"
+git = "https://github.com/embassy-rs/embassy"
+rev = "9cbbedef793d619c659c6a81080675282690a8af"
 version = "0.3.0"
 features = ["defmt", "tick-hz-32_768"]
 
