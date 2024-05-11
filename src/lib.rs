@@ -1,7 +1,11 @@
 //! oled_async OLED display driver
 //!
-//! The driver must be initialised by passing an I2C or SPI interface peripheral to the
-//! [`Builder`](builder/struct.Builder.html),
+//! The driver must be initialised by passing an instance that implements the AsyncWriteOnlyDataCommand
+//! trait from the display-interface crate. Usually this is either:
+//! * display_interface_spi::SPIInterface<...> or
+//! * display_interface_i2c::I2CInterface<...>
+//!
+//! This is provided to the [`Builder`](builder/struct.Builder.html),
 //! which will in turn create a driver instance in a particular mode. By default, the builder
 //! returns a `mode::RawMode` instance which isn't very useful by itself. You can coerce the driver
 //! into a more useful mode by calling `into()` and defining the type you want to coerce to. For
@@ -23,17 +27,15 @@
 //! display.flush().unwrap();
 //! ```
 //!
-//! See the [example](https://github.com/jamwaffles/oled_async/blob/master/examples/graphics_i2c.rs)
+//! See the [examples](https://github.com/cschuhen/oled_drivers/tree/master/examples)
 //! for more usage. The [entire `embedded_graphics` featureset](https://github.com/jamwaffles/embedded-graphics#features)
 //! is supported by this driver.
 //!
 //! It's possible to customise the driver to suit your display/application. Take a look at the
-//! [Builder] for available options.
+//! [Builder] for available options. Look in src/variants for different supported display
+//! variants.
 //!
 //! # Examples
-//!
-//! Examples can be found in
-//! [the examples/ folder](https://github.com/jamwaffles/oled_async/blob/master/examples)
 //!
 //! ## Draw some text to the display
 //!
@@ -47,9 +49,12 @@
 //!     text::{Baseline, Text},
 //! };
 //! use oled_async::{prelude::*, Builder};
-//! # let i2c = oled_async::test_helpers::I2cStub;
+//! # let display_interface # See display_interface crate or examples
 //!
-//! let mut display: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
+//! let mut display: GraphicsMode<_, _> = Builder::new(oled_async::displays::sh1107::Sh1107_128_128 {})
+//!         .with_rotation(crate::DisplayRotation::Rotate180)
+//!         .connect(display_interface)
+//!         .into();
 //!
 //! display.init().unwrap();
 //! display.flush().unwrap();

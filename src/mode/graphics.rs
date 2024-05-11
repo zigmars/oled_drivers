@@ -1,45 +1,34 @@
 //! Buffered display module for use with the [embedded-graphics] crate
 //!
 //! ```rust,no_run
+//!
 //! use embedded_graphics::{
+//!     mono_font::{ascii::FONT_6X10, MonoTextStyleBuilder},
 //!     pixelcolor::BinaryColor,
 //!     prelude::*,
-//!     primitives::{Circle, Line, PrimitiveStyle, Rectangle},
+//!     text::{Baseline, Text},
 //! };
-//! use oled_async::{prelude::*, Builder};
-//! # let i2c = oled_async::test_helpers::I2cStub;
+//! async fn run_display(display_interface: SomeInstanceOfDisplayInterface) {
+//!     let mut disp: GraphicsMode<_, _> = Builder::new(Display {})
+//!         .with_rotation(crate::DisplayRotation::Rotate180)
+//!         .connect(display_interface)
+//!         .into();
 //!
-//! let mut display: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
+//!     disp.reset(&mut reset, &mut delay).unwrap();
+//!     disp.init().await.unwrap();
+//!     disp.clear();
+//!     disp.flush().await.unwrap();
 //!
-//! display.init().unwrap();
-//! display.flush().unwrap();
+//!     let text_style = MonoTextStyleBuilder::new()
+//!         .font(&FONT_6X10)
+//!         .text_color(BinaryColor::On)
+//!         .build();
+//!     Text::with_baseline("Hello world!", Point::zero(), text_style, Baseline::Top)
+//!         .draw(&mut disp)
+//!         .unwrap();
 //!
-//! Line::new(Point::new(8, 16 + 16), Point::new(8 + 16, 16 + 16))
-//!     .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
-//!     .draw(&mut display)
-//!     .unwrap();
-//!
-//! Line::new(Point::new(8, 16 + 16), Point::new(8 + 8, 16))
-//!     .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
-//!     .draw(&mut display)
-//!     .unwrap();
-//!
-//! Line::new(Point::new(8 + 16, 16 + 16), Point::new(8 + 8, 16))
-//!     .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
-//!     .draw(&mut display)
-//!     .unwrap();
-//!
-//! Rectangle::with_corners(Point::new(48, 16), Point::new(48 + 16, 16 + 16))
-//!     .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
-//!     .draw(&mut display)
-//!     .unwrap();
-//!
-//! Circle::new(Point::new(88, 16), 16)
-//!     .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
-//!     .draw(&mut display)
-//!     .unwrap();
-//!
-//! display.flush().unwrap();
+//!     disp.flush().await.unwrap();
+//! }
 //! ```
 
 use display_interface::{AsyncWriteOnlyDataCommand, DisplayError};
@@ -181,6 +170,11 @@ where
     /// Get display dimensions, taking into account the current rotation of the display
     pub fn get_dimensions(&self) -> (u8, u8) {
         self.properties.get_dimensions()
+    }
+
+    /// Get the display rotation
+    pub fn get_rotation(&self) -> DisplayRotation {
+        self.properties.get_rotation()
     }
 
     /// Set the display rotation

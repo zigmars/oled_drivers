@@ -8,51 +8,31 @@
 //!
 //! # Examples
 //!
-//! Connect over SPI with default rotation (0 deg) and size (128x64):
+//! Connect 180 deg rotation to a 128x128 SH1107 based display:
 //!
 //! ```rust,no_run
 //! use oled_async::{mode::GraphicsMode, Builder};
-//! let spi = /* SPI interface from your HAL of choice */
-//! # oled_async::test_helpers::SpiStub;
-//! let dc = /* GPIO data/command select pin */
-//! # oled_async::test_helpers::PinStub;
+//! let spi = /* Create an SPI 'device' that implements embedded_hal::SpiDevice  using a HAL of your choice */
+//! let di = /*  Use spi to create an interface that implements display_interface::AsyncWriteOnlyDataCommand using a bus that matches your hardware such as display_interface_spi::SPIInterface */
 //!
-//! // This example does not use a Chip Select pin
-//! let cs = oled_async::builder::NoOutputPin::new();
-//!
-//! Builder::new().connect_spi(spi, dc, cs);
+//! let mut raw_display = Builder::new(oled_async::displays::sh1107::Sh1107_128_128 {})
+//!         .with_rotation(crate::DisplayRotation::Rotate180)
+//!         .connect(di);
 //! ```
 //!
-//! Connect over I2C, changing lots of options
+//! The driver is intended to support multiple chipsets, at least in the SH11xx
+//! and SSH13xx families. It is intended to be easy to add additional specific
+//! display variants. This can be done by adding to the provided modules in
+//! src/displays (please submit a PR) or creating a new display variant out of
+//! tree in user crate.
 //!
-//! ```rust,no_run
-//! use oled_async::{displayrotation::DisplayRotation, displaysize::DisplaySize, Builder};
-//!
-//! let i2c = /* I2C interface from your HAL of choice */
-//! # oled_async::test_helpers::I2cStub;
-//!
-//! Builder::new()
-//!     .with_rotation(DisplayRotation::Rotate180)
-//!     .with_i2c_addr(0x3D)
-//!     .with_size(DisplaySize::Display128x32)
-//!     .connect_i2c(i2c);
-//! ```
-//!
-//! The above examples will produce a [RawMode](../mode/raw/struct.RawMode.html) instance
+//! The above example will produce a [RawMode](../mode/raw/struct.RawMode.html) instance
 //! by default. You need to coerce them into a mode by specifying a type on assignment. For
 //! example, to use [`GraphicsMode` mode](../mode/graphics/struct.GraphicsMode.html):
 //!
 //! ```rust,no_run
 //! use oled_async::{mode::GraphicsMode, Builder};
-//! let spi = /* SPI interface from your HAL of choice */
-//! # oled_async::test_helpers::SpiStub;
-//! let dc = /* GPIO data/command select pin */
-//! # oled_async::test_helpers::PinStub;
-//!
-//! // This example does not use a Chip Select pin
-//! let cs = oled_async::builder::NoOutputPin::new();
-//!
-//! let display: GraphicsMode<_> = Builder::new().connect_spi(spi, dc, cs).into();
+//! let mut display: GraphicsMode<_, _> = raw_display.into();
 //! ```
 
 use display_interface::AsyncWriteOnlyDataCommand;

@@ -1,73 +1,48 @@
-//! Draw a 1 bit per pixel black and white image. On a 128x64 SSD1306 display over I2C.
-//!
-//! Image was created with ImageMagick:
-//!
-//! ```bash
-//! convert rust.png -depth 1 gray:rust.raw
-//! ```
-//!
-//! This example is for the STM32F103 "Blue Pill" board using I2C1.
+//! Draw a 1 bit per pixel black and white image.
 //!
 //! Wiring connections are as follows for a CRIUS-branded display:
 //!
-//! ```
-//!      Display -> Blue Pill
-//! (black)  GND -> GND
-//! (red)    +5V -> VCC
-//! (yellow) SDA -> PB9
-//! (green)  SCL -> PB8
-//! ```
+//! This example is tested with an STM32G431 board connected to a SH1107 based display via SPI or I2C.
 //!
-//! Run on a Blue Pill with `cargo run --example pixelsquare`.
+//! It should be easy to modify:
+//!  - Display type: Choose below
+//!  - Chip/board, if STM32:
+//!       - Modify chip in Cargo.toml
+//!       - Choose different periperals and pins in bsp.rs
+//!
+//! Run with: `cargo run --example embassy --features=embassy-stm32 --features=spi --release`.
+//! or
+//! Run with: `cargo run --example embassy --features=embassy-stm32 --features=i2c --release`.
+//!
 
 #![no_std]
 #![no_main]
 
-use cortex_m_rt::{entry, exception, ExceptionFrame};
+mod bsp;
+
+use embassy_executor::Spawner;
+use embedded_hal_async::delay::DelayNs;
 use oled_async::{prelude::*, Builder};
-use panic_semihosting as _;
-use stm32f1xx_hal::{
-    i2c::{BlockingI2c, DutyCycle, Mode},
-    prelude::*,
-    stm32,
-};
+use {defmt_rtt as _, panic_probe as _};
 
-#[entry]
-fn main() -> ! {
-    let dp = stm32::Peripherals::take().unwrap();
+#[embassy_executor::main]
+async fn main(_spawner: Spawner) {
+    let (di, mut reset, mut delay) = bsp::board::get_board();
 
-    let mut flash = dp.FLASH.constrain();
-    let mut rcc = dp.RCC.constrain();
+    type Display = oled_async::displays::sh1107::Sh1107_128_128;
+    //type Display = oled_async::displays::sh1108::Sh1108_64_160;
+    //type Display = oled_async::displays::ssd1309::Ssd1309_128_64;
 
-    let clocks = rcc.cfgr.freeze(&mut flash.acr);
+    let raw_disp = Builder::new(Display {})
+        .with_rotation(crate::DisplayRotation::Rotate180)
+        .connect(di);
 
-    let mut afio = dp.AFIO.constrain(&mut rcc.apb2);
+    let mut display: GraphicsMode<_, _> = raw_disp.into();
 
-    let mut gpiob = dp.GPIOB.split(&mut rcc.apb2);
-
-    let scl = gpiob.pb8.into_alternate_open_drain(&mut gpiob.crh);
-    let sda = gpiob.pb9.into_alternate_open_drain(&mut gpiob.crh);
-
-    let i2c = BlockingI2c::i2c1(
-        dp.I2C1,
-        (scl, sda),
-        &mut afio.mapr,
-        Mode::Fast {
-            frequency: 100.khz().into(),
-            duty_cycle: DutyCycle::Ratio2to1,
-        },
-        clocks,
-        &mut rcc.apb1,
-        1000,
-        10,
-        1000,
-        1000,
-    );
-
-    let mut display: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
-
-    display.init().unwrap();
-    display.flush().unwrap();
+    display.reset(&mut reset, &mut delay).unwrap();
+    display.init().await.unwrap();
+    display.clear();
+    display.flush().await.unwrap();
 
     // Top side
     display.set_pixel(0, 0, 1);
@@ -93,12 +68,9 @@ fn main() -> ! {
     display.set_pixel(0, 2, 1);
     display.set_pixel(0, 3, 1);
 
-    display.flush().unwrap();
+    display.flush().await.unwrap();
 
-    loop {}
-}
-
-#[exception]
-fn HardFault(ef: &ExceptionFrame) -> ! {
-    panic!("{:#?}", ef);
+    loop {
+        delay.delay_ms(1000).await;
+    }
 }
