@@ -50,7 +50,7 @@ async fn main(_spawner: Spawner) {
         .with_rotation(crate::DisplayRotation::Rotate180)
         .connect(di);
 
-    let mut disp: GraphicsMode<_, _> = raw_disp.into();
+    let mut disp: GraphicsMode<_, _, { 128 * 128 / 8 }> = raw_disp.into();
 
     disp.reset(&mut reset, &mut delay).unwrap();
     disp.init().await.unwrap();

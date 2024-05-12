@@ -39,19 +39,19 @@ use crate::{
     properties::DisplayProperties,
 };
 
-const BUFFER_SIZE: usize = 160 * 160 / 8;
+const DEFAULT_BUFFER_SIZE: usize = 160 * 160 / 8;
 
 /// Graphics mode handler
-pub struct GraphicsMode<DV, DI>
+pub struct GraphicsMode<DV, DI, const BS: usize = DEFAULT_BUFFER_SIZE>
 where
     DI: AsyncWriteOnlyDataCommand,
     DV: display::DisplayVariant,
 {
     properties: DisplayProperties<DV, DI>,
-    buffer: [u8; BUFFER_SIZE],
+    buffer: [u8; BS],
 }
 
-impl<DV, DI> DisplayModeTrait<DV, DI> for GraphicsMode<DV, DI>
+impl<DV, DI, const BS: usize> DisplayModeTrait<DV, DI> for GraphicsMode<DV, DI, BS>
 where
     DI: AsyncWriteOnlyDataCommand,
     DV: crate::display::DisplayVariant,
@@ -60,7 +60,7 @@ where
     fn new(properties: DisplayProperties<DV, DI>) -> Self {
         GraphicsMode {
             properties,
-            buffer: [0; BUFFER_SIZE],
+            buffer: [0u8; BS],
         }
     }
 
@@ -70,14 +70,14 @@ where
     }
 }
 
-impl<DV, DI> GraphicsMode<DV, DI>
+impl<DV, DI, const BS: usize> GraphicsMode<DV, DI, BS>
 where
     DI: AsyncWriteOnlyDataCommand,
     DV: crate::display::DisplayVariant,
 {
     /// Clear the display buffer. You need to call `display.flush()` for any effect on the screen
     pub fn clear(&mut self) {
-        self.buffer = [0; BUFFER_SIZE];
+        self.buffer = [0; BS];
     }
 
     /// Reset display
@@ -203,7 +203,7 @@ use embedded_graphics_core::{
 };
 
 #[cfg(feature = "graphics")]
-impl<DV, DI> DrawTarget for GraphicsMode<DV, DI>
+impl<DV, DI, const BS: usize> DrawTarget for GraphicsMode<DV, DI, BS>
 where
     DI: AsyncWriteOnlyDataCommand,
     DV: crate::display::DisplayVariant,
@@ -229,7 +229,7 @@ where
 }
 
 #[cfg(feature = "graphics")]
-impl<DV, DI> OriginDimensions for GraphicsMode<DV, DI>
+impl<DV, DI, const BS: usize> OriginDimensions for GraphicsMode<DV, DI, BS>
 where
     DI: AsyncWriteOnlyDataCommand,
     DV: crate::display::DisplayVariant,
