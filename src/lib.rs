@@ -15,7 +15,17 @@
 //!
 //! ```rust,no_run
 //! use oled_async::{prelude::*, Builder};
-//! # let i2c = oled_async::test_helpers::I2cStub;
+//! use oled_async::displays::sh1107::Sh1107_128_128;
+//!
+//! let raw_disp = Builder::new(Sh1107_128_128 {})
+//!     .with_rotation(crate::DisplayRotation::Rotate180)
+//!     .connect(display_interface);
+//! let mut display: GraphicsMode<_, _> = raw_disp.into();
+//! display.reset(&mut reset, &mut delay).unwrap();
+//! display.init().await.unwrap();
+//! display.clear();
+//! display.flush().await.unwrap();
+//!
 //!
 //! let mut display: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
 //!
@@ -24,7 +34,7 @@
 //!
 //! display.set_pixel(10, 20, 1);
 //!
-//! display.flush().unwrap();
+//! display.flush().await.unwrap();
 //! ```
 //!
 //! See the [examples](https://github.com/cschuhen/oled_drivers/tree/master/examples)
