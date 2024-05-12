@@ -1,19 +1,18 @@
 # SH1106 driver
 
-[![Build Status](https://circleci.com/gh/jamwaffles/sh1106/tree/master.svg?style=shield)](https://circleci.com/gh/jamwaffles/sh1106/tree/master)
-[![Crates.io](https://img.shields.io/crates/v/sh1106.svg)](https://crates.io/crates/sh1106)
-[![Docs.rs](https://docs.rs/sh1106/badge.svg)](https://docs.rs/sh1106)
+[![Crates.io](https://img.shields.io/crates/v/oled_async.svg)](https://crates.io/crates/oled_async)
+[![Docs.rs](https://docs.rs/sh1106/badge.svg)](https://docs.rs/oled_async)
 
-[![SH1106 display module showing the Rust logo](readme_banner.jpg?raw=true)](examples/image.rs)
+[![SH1107 SPI and I2C display modules showing the Rust logo](readme_banner.jpg?raw=true)](examples/image.rs)
 
-I2C driver for the SH1106 OLED display written in 100% Rust
+I2C and SPI driver for the SH11xx and SSD1xxx OLED displays written in 100% Rust
 
-## [Documentation](https://docs.rs/sh1106)
+## [Documentation](https://docs.rs/oled_async)
 
 ## [Examples]
 
 This crate uses [`probe-run`](https://crates.io/crates/probe-run) to run the examples. Once set up,
-it should be as simple as `cargo run --example <example name> --release`. `--release` will be
+it should be as simple as `cargo run --example image --features=embassy-stm32 --features=spi --release`. `--release` will be
 required for some examples to reduce FLASH usage.
 
 From [`examples/text.rs`](examples/text.rs):
@@ -22,76 +21,57 @@ From [`examples/text.rs`](examples/text.rs):
 #![no_std]
 #![no_main]
 
-use cortex_m_rt::{entry, exception, ExceptionFrame};
+mod bsp;
+
+use embassy_executor::Spawner;
 use embedded_graphics::{
-    fonts::{Font6x8, Text},
+    mono_font::{ascii::FONT_6X10, MonoTextStyleBuilder},
     pixelcolor::BinaryColor,
     prelude::*,
-    style::TextStyle,
+    text::{Baseline, Text},
 };
-use panic_semihosting as _;
-use sh1106::{prelude::*, Builder};
-use stm32f1xx_hal::{
-    i2c::{BlockingI2c, DutyCycle, Mode},
-    prelude::*,
-    stm32,
-};
+use embedded_hal_async::delay::DelayNs;
 
-#[entry]
-fn main() -> ! {
-    let dp = stm32::Peripherals::take().unwrap();
+use oled_async::{prelude::*, Builder};
+use {defmt_rtt as _, panic_probe as _};
 
-    let mut flash = dp.FLASH.constrain();
-    let mut rcc = dp.RCC.constrain();
+#[embassy_executor::main]
+async fn main(_spawner: Spawner) {
+    let (di, mut reset, mut delay) = bsp::board::get_board();
 
-    let clocks = rcc.cfgr.freeze(&mut flash.acr);
+    type Display = oled_async::displays::sh1107::Sh1107_128_128;
+    //type Display = oled_async::displays::sh1108::Sh1108_64_160;
+    //type Display = oled_async::displays::ssd1309::Ssd1309_128_64;
 
-    let mut afio = dp.AFIO.constrain(&mut rcc.apb2);
+    let raw_disp = Builder::new(Display {})
+        .with_rotation(crate::DisplayRotation::Rotate180)
+        .connect(di);
 
-    let mut gpiob = dp.GPIOB.split(&mut rcc.apb2);
+    let mut display: GraphicsMode<_, _, { 128 * 128 / 8 }> = raw_disp.into();
 
-    let scl = gpiob.pb8.into_alternate_open_drain(&mut gpiob.crh);
-    let sda = gpiob.pb9.into_alternate_open_drain(&mut gpiob.crh);
+    display.reset(&mut reset, &mut delay).unwrap();
+    display.init().await.unwrap();
+    display.clear();
+    display.flush().await.unwrap();
 
-    let i2c = BlockingI2c::i2c1(
-        dp.I2C1,
-        (scl, sda),
-        &mut afio.mapr,
-        Mode::Fast {
-            frequency: 100.khz().into(),
-            duty_cycle: DutyCycle::Ratio2to1,
-        },
-        clocks,
-        &mut rcc.apb1,
-        1000,
-        10,
-        1000,
-        1000,
-    );
+    let text_style = MonoTextStyleBuilder::new()
+        .font(&FONT_6X10)
+        .text_color(BinaryColor::On)
+        .build();
 
-    let mut disp: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
-
-    disp.init().unwrap();
-    disp.flush().unwrap();
-
-    Text::new("Hello world!", Point::zero())
-        .into_styled(TextStyle::new(Font6x8, BinaryColor::On))
+    Text::with_baseline("Hello world!", Point::zero(), text_style, Baseline::Top)
         .draw(&mut display)
         .unwrap();
 
-    Text::new("Hello Rust!", Point::new(0, 16))
-        .into_styled(TextStyle::new(Font6x8, BinaryColor::On))
+    Text::with_baseline("Hello Rust!", Point::new(0, 16), text_style, Baseline::Top)
         .draw(&mut display)
         .unwrap();
 
-    disp.flush().unwrap();
+    display.flush().await.unwrap();
 
-    loop {}
-}
-
-#[exception]
-fn HardFault(ef: &ExceptionFrame) -> ! {
-    panic!("{:#?}", ef);
+    loop {
+        delay.delay_ms(1000).await;
+    }
 }
 ```
 
