@@ -5,6 +5,29 @@ use display_interface::{AsyncWriteOnlyDataCommand, DisplayError};
 
 use crate::command::{Command, VcomhLevel};
 
+/// Generic 64x128 with SH1107 controller
+#[derive(Debug, Clone, Copy)]
+pub struct Sh1107_64_128 {}
+
+impl DisplayVariant for Sh1107_64_128 {
+    const WIDTH: u8 = 64;
+    const HEIGHT: u8 = 128;
+    const COLUMN_OFFSET: u8 = 32;
+
+    async fn init_column_mode<DI>(
+        iface: &mut DI,
+        //display_rotation: DisplayRotation,
+    ) -> Result<(), DisplayError>
+    where
+        DI: AsyncWriteOnlyDataCommand,
+    {
+        init_column_mode_common(iface, Self::dimensions()).await?;
+        Command::ComPinConfig(true).send(iface).await?;
+
+        Ok(())
+    }
+}
+
 /// Generic 128x128 with SH1107 controller
 #[derive(Debug, Clone, Copy)]
 pub struct Sh1107_128_128 {}
