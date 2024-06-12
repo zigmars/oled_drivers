@@ -54,7 +54,7 @@ where
 impl<DV, DI, const BS: usize> DisplayModeTrait<DV, DI> for GraphicsMode<DV, DI, BS>
 where
     DI: AsyncWriteOnlyDataCommand,
-    DV: crate::display::DisplayVariant,
+    DV: display::DisplayVariant,
 {
     /// Create new GraphicsMode instance
     fn new(properties: DisplayProperties<DV, DI>) -> Self {
@@ -73,7 +73,7 @@ where
 impl<DV, DI, const BS: usize> GraphicsMode<DV, DI, BS>
 where
     DI: AsyncWriteOnlyDataCommand,
-    DV: crate::display::DisplayVariant,
+    DV: display::DisplayVariant,
 {
     /// Clear the display buffer. You need to call `display.flush()` for any effect on the screen
     pub fn clear(&mut self) {
@@ -206,7 +206,7 @@ use embedded_graphics_core::{
 impl<DV, DI, const BS: usize> DrawTarget for GraphicsMode<DV, DI, BS>
 where
     DI: AsyncWriteOnlyDataCommand,
-    DV: crate::display::DisplayVariant,
+    DV: display::DisplayVariant,
 {
     type Color = BinaryColor;
     type Error = DisplayError;
@@ -232,7 +232,7 @@ where
 impl<DV, DI, const BS: usize> OriginDimensions for GraphicsMode<DV, DI, BS>
 where
     DI: AsyncWriteOnlyDataCommand,
-    DV: crate::display::DisplayVariant,
+    DV: display::DisplayVariant,
 {
     fn size(&self) -> Size {
         let (w, h) = self.get_dimensions();

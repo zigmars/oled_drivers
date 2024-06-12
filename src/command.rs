@@ -27,6 +27,8 @@ pub enum Command {
     ColumnAddressHigh(u8),
     /// Set page address
     PageAddress(u8),
+    /// Set page address(large variant for sh1108)
+    LargePageAddress(u8),
     /// Set display start line from 0-63
     StartLine(u8),
     /// Reverse columns from 127-0
@@ -75,6 +77,7 @@ impl Command {
             Command::ColumnAddressLow(addr) => ([0xF & addr, 0, 0, 0, 0, 0, 0], 1),
             Command::ColumnAddressHigh(addr) => ([0x10 | (0xF & addr), 0, 0, 0, 0, 0, 0], 1),
             Command::PageAddress(page) => ([0xB0 | (page), 0, 0, 0, 0, 0, 0], 1),
+            Command::LargePageAddress(page) => ([0xB0, page, 0, 0, 0, 0, 0], 2),
             Command::StartLine(line) => ([0x40 | (0x3F & line), 0, 0, 0, 0, 0, 0], 1),
             Command::SegmentRemap(remap) => ([0xA0 | (remap as u8), 0, 0, 0, 0, 0, 0], 1),
             Command::Multiplex(ratio) => ([0xA8, ratio, 0, 0, 0, 0, 0], 2),
@@ -92,7 +95,6 @@ impl Command {
             Command::Noop => ([0xE3, 0, 0, 0, 0, 0, 0], 1),
             Command::ChargePump(en) => ([0xAD, 0x8A | (en as u8), 0, 0, 0, 0, 0], 2),
         };
-
         // Send command over the interface
         iface.send_commands(DataFormat::U8(&data[0..len])).await
     }

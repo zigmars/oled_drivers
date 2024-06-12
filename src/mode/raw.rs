@@ -19,7 +19,6 @@ where
 impl<DV, DI> DisplayModeTrait<DV, DI> for RawMode<DV, DI>
 where
     DI: AsyncWriteOnlyDataCommand,
-    DV: crate::display::DisplayVariant,
 {
     /// Create new RawMode instance
     fn new(properties: DisplayProperties<DV, DI>) -> Self {

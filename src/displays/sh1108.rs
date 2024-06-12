@@ -13,6 +13,7 @@ impl DisplayVariant for Sh1108_64_160 {
     const WIDTH: u8 = 64;
     const HEIGHT: u8 = 160;
     const COLUMN_OFFSET: u8 = 48;
+    const LARGE_PAGE_ADDRESS: bool = true;
 
     async fn init_column_mode<DI>(
         iface: &mut DI,
@@ -37,6 +38,7 @@ impl DisplayVariant for Sh1108_96_160 {
     const WIDTH: u8 = 96;
     const HEIGHT: u8 = 160;
     const COLUMN_OFFSET: u8 = 32;
+    const LARGE_PAGE_ADDRESS: bool = true;
 
     async fn init_column_mode<DI>(
         iface: &mut DI,
@@ -60,6 +62,7 @@ impl DisplayVariant for Sh1108_128_160 {
     const WIDTH: u8 = 128;
     const HEIGHT: u8 = 160;
     const COLUMN_OFFSET: u8 = 16;
+    const LARGE_PAGE_ADDRESS: bool = true;
 
     async fn init_column_mode<DI>(
         iface: &mut DI,
@@ -84,6 +87,7 @@ impl DisplayVariant for Sh1108_160_160 {
     const WIDTH: u8 = 160;
     const HEIGHT: u8 = 160;
     const COLUMN_OFFSET: u8 = 0;
+    const LARGE_PAGE_ADDRESS: bool = true;
 
     async fn init_column_mode<DI>(
         iface: &mut DI,

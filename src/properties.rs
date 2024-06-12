@@ -92,9 +92,15 @@ where
     }
 
     async fn send_draw_address(&mut self) -> Result<(), DisplayError> {
-        Command::PageAddress(self.draw_row.into())
-            .send(&mut self.iface)
-            .await?;
+        if DV::LARGE_PAGE_ADDRESS {
+            Command::LargePageAddress(self.draw_row.into())
+                .send(&mut self.iface)
+                .await?;
+        } else {
+            Command::PageAddress(self.draw_row.into())
+                .send(&mut self.iface)
+                .await?;
+        }
         Command::ColumnAddressLow(0xF & self.draw_column)
             .send(&mut self.iface)
             .await?;
