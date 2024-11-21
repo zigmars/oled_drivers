@@ -2,6 +2,104 @@
 //!
 //! ```
 
+#[cfg(feature = "embassy-rp")]
+pub mod board {
+
+    use embassy_rp::gpio::{Level, Output};
+    use embassy_rp::config::Config;
+    use embassy_time::Delay;
+    // use cortex_m::delay::Delay;
+
+    #[cfg(feature = "i2c")]
+    embassy_rp::bind_interrupts!(struct Irqs {
+        I2C2_EV => embassy_rp::i2c::EventInterruptHandler<embassy_rp::peripherals::I2C2>;
+        I2C2_ER => embassy_rp::i2c::ErrorInterruptHandler<embassy_rp::peripherals::I2C2>;
+    });
+
+    pub type OutputPin = Output<'static>;
+
+    #[cfg(feature = "spi")]
+    pub mod types {
+        pub type OutputPin = embassy_rp::gpio::Output<'static>;
+        type Spi = embassy_rp::spi::Spi<
+            'static,
+            embassy_rp::peripherals::SPI0,
+            embassy_rp::spi::Async,
+        >;
+        type SPIDevice =
+            embedded_hal_bus::spi::ExclusiveDevice<Spi, OutputPin, embassy_time::Delay>;
+        pub type DisplayInterface = display_interface_spi::SPIInterface<SPIDevice, OutputPin>;
+    }
+
+    #[cfg(feature = "i2c")]
+    pub mod types {
+
+        pub type I2c = embassy_rp::i2c::I2c<
+            'static,
+            embassy_rp::peripherals::I2C2,
+            embassy_rp::spi::Async,
+        >;
+        pub type DisplayInterface = display_interface_i2c::I2CInterface<I2c>;
+    }
+
+    pub fn get_board() -> (types::DisplayInterface, OutputPin, Delay) {
+        let mut config = Config::default();
+        {
+            // use embassy_rp::rcc::*;
+            // config.rcc.sys = Sysclk::HSI;
+        }
+        let p = embassy_rp::init(config);
+
+        #[cfg(feature = "spi")]
+        let di = {
+            // use embassy_rp::time::mhz;
+
+            let cs = Output::new(p.PIN_0, Level::High);
+            let dc = Output::new(p.PIN_1, Level::High);
+            let mut spi_config = embassy_rp::spi::Config::default();
+            spi_config.frequency = 4_000_000;
+            let spi = embassy_rp::spi::Spi::new(
+                p.SPI0,
+                p.PIN_2, p.PIN_3, p.PIN_4,
+                p.DMA_CH1, p.DMA_CH2,
+                spi_config,
+            );
+            let spi = embedded_hal_bus::spi::ExclusiveDevice::new(spi, cs, Delay);
+            display_interface_spi::SPIInterface::new(spi, dc)
+        };
+
+        #[cfg(feature = "i2c")]
+        let di = {
+            use embassy_rp::time::Hertz;
+
+            let mut i2c_cfg = embassy_rp::i2c::Config::default();
+            i2c_cfg.sda_pullup = false;
+            i2c_cfg.sda_pullup = false;
+
+            let i2c = embassy_rp::i2c::I2c::new(
+                p.I2C2,
+                p.PIN_9, // SCK
+                p.PIN_8, // SDA
+                Irqs,
+                p.DMA1_CH1,
+                p.DMA1_CH2,
+                Hertz(100_000),
+                i2c_cfg,
+            );
+
+            display_interface_i2c::I2CInterface::new(
+                i2c,  // I2C
+                0x3C, // I2C Address
+                0x40, // Databyte
+            )
+        };
+
+        let reset = Output::new(p.PIN_5, Level::High);
+
+        (di, reset, Delay {})
+    }
+}
+
 #[cfg(feature = "embassy-stm32")]
 pub mod board {
 

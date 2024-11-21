@@ -1,6 +1,9 @@
+[features]
+default = ["embassy-rp", "spi"]
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
 #runner = "probe-run --chip STM32F103C8"
-runner = "probe-run --chip STM32G431CBUx"
+# runner = "probe-run --chip STM32G431CBUx"
+runner = "probe-run --chip rp2040"
 rustflags = [
   "-C", "link-arg=-Tlink.x",
 # --- ADD following new flag ---
@@ -8,4 +11,4 @@ rustflags = [
 ]
 
 [build]
-target = "thumbv7m-none-eabi"
+target = "thumbv6m-none-eabi"

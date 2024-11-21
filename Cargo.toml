@@ -58,12 +58,19 @@ git = "https://github.com/embassy-rs/embassy"
 rev = "9cbbedef793d619c659c6a81080675282690a8af"
 features = ["defmt", "time-driver-any", "stm32g431cb", "memory-x", "unstable-pac", "exti"]
 
+[dependencies.embassy-rp]
+optional = true
+version = "0.1.0"
+git = "https://github.com/embassy-rs/embassy"
+rev = "9cbbedef793d619c659c6a81080675282690a8af"
+features = ["defmt", "unstable-pac", "time-driver"]#, "rp2040"]
+
 [dependencies.embassy-time]
 optional = true
 git = "https://github.com/embassy-rs/embassy"
 rev = "9cbbedef793d619c659c6a81080675282690a8af"
 version = "0.3.0"
-features = ["defmt", "tick-hz-32_768"]
+features = ["defmt"]# , "tick-hz-32_768"
 
 
 [features]
@@ -72,10 +79,10 @@ graphics = ["embedded-graphics-core"]
 #graphics = ["embedded-graphics"]
 
 # These features are for development/testing
-stm32f1 = ["stm32f1xx-hal"]
-stm32f4 = ["stm32f4xx-hal"]
-stm32g4 = ["stm32g4xx-hal"]
-embassy-stm32 = ["dep:embassy-time", "dep:embassy-stm32"]
+# stm32f1 = ["stm32f1xx-hal"]
+# stm32f4 = ["stm32f4xx-hal"]
+# stm32g4 = ["stm32g4xx-hal"]
+# embassy-stm32 = ["dep:embassy-time", "dep:embassy-stm32"]
 spi = []
 i2c = []
 
